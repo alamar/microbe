@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>ru.lj.alamar</groupId>
+  <artifactId>microbe</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>microbe</name>
+  <url>http://alamar.lj.ru</url>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.7</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ru.yandex</groupId>
+      <artifactId>bolts</artifactId>
+      <version>20121016122946</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/ru.yandex-bolts-jar-20121016122946.jar</systemPath>
+    </dependency>
+  </dependencies>
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>exec-maven-plugin</artifactId>
+      <version>1.2.1</version>
+      <executions>
+        <execution>
+          <goals>
+            <goal>java</goal>
+          </goals>
+        </execution>
+      </executions>
+      <configuration>
+        <mainClass>ru.lj.alamar.microbe.Main</mainClass>
+        <classpathScope>compile</classpathScope>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+</project>
