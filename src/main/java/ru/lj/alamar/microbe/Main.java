@@ -13,7 +13,7 @@ public class Main {
     public static int MICROBES = 100000;
     public static int CHROMOSOMES = 1;
     public static int GENES = 100;
-    public static float GENE_MUTATION_CHANCE = 0.00864f;
+    public static float GENE_MUTATION_CHANCE = 0.00867f;
     public static float MUTATION_POSITIVE_CHANCE = 0.1f;
     public static float NEGATIVE_EFFECT = 0.05f;
     public static float POSITIVE_EFFECT = 0.01f;
@@ -25,7 +25,7 @@ public class Main {
         for (int i = 0; i < MICROBES; i++) {
             microbes.add(new Microbe(CHROMOSOMES, GENES));
         }
-        for (int s = 0; s < 1000; s++) {
+        for (int s = 0; s < 10000; s++) {
             float totalFitness = 0f;
             for (Microbe microbe : microbes) {
                 microbe.mutate(r, GENE_MUTATION_CHANCE, NEGATIVE_EFFECT, MUTATION_POSITIVE_CHANCE, POSITIVE_EFFECT);
@@ -33,6 +33,9 @@ public class Main {
             }
             float avgFitness = totalFitness / (float) microbes.size();
             microbes = selectOffspring(r, microbes);
+            if (microbes.isEmpty()) {
+                break;
+            }
             System.out.println(s + "\t" + microbes.size() + "\t" + avgFitness);
         }
     }
