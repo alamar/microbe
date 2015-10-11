@@ -11,6 +11,7 @@ import ru.yandex.bolts.collection.Tuple2List;
  */
 public class Main {
     public static int MICROBES = 100000;
+    public static int CHROMOSOMES = 1;
     public static int GENES = 100;
     public static float GENE_MUTATION_CHANCE = 0.00864f;
     public static float MUTATION_POSITIVE_CHANCE = 0.1f;
@@ -19,12 +20,12 @@ public class Main {
     public static float LUCK_RATIO = 0.3f;
 
     public static void main(String[] args) {
-        Random r = new Random();
+        Random r = new Random(1444556354);
         ListF<Microbe> microbes = Cf.arrayList();
         for (int i = 0; i < MICROBES; i++) {
-            microbes.add(new Microbe(GENES));
+            microbes.add(new Microbe(CHROMOSOMES, GENES));
         }
-        for (int s = 0; s < 500; s++) {
+        for (int s = 0; s < 1000; s++) {
             float totalFitness = 0f;
             for (Microbe microbe : microbes) {
                 microbe.mutate(r, GENE_MUTATION_CHANCE, NEGATIVE_EFFECT, MUTATION_POSITIVE_CHANCE, POSITIVE_EFFECT);
@@ -32,7 +33,7 @@ public class Main {
             }
             float avgFitness = totalFitness / (float) microbes.size();
             microbes = selectOffspring(r, microbes);
-            System.out.println(microbes.size() + "\t" + avgFitness);
+            System.out.println(s + "\t" + microbes.size() + "\t" + avgFitness);
         }
     }
 
@@ -40,8 +41,9 @@ public class Main {
         Tuple2List<Float, Microbe> withFitnessAndLuck = Tuple2List.arrayList();
         for (Microbe microbe : population) {
             if (microbe.isDead()) continue;
-            withFitnessAndLuck.add(microbe.fitness() * (1f - LUCK_RATIO) + r.nextFloat() * LUCK_RATIO, microbe);
-            withFitnessAndLuck.add(microbe.fitness() * (1f - LUCK_RATIO) + r.nextFloat() * LUCK_RATIO, microbe.replicate());
+            float fitness = microbe.fitness();
+            withFitnessAndLuck.add(fitness * (1f - LUCK_RATIO) + r.nextFloat() * LUCK_RATIO, microbe);
+            withFitnessAndLuck.add(fitness * (1f - LUCK_RATIO) + r.nextFloat() * LUCK_RATIO, microbe.replicate(r));
         }
         return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
     }
