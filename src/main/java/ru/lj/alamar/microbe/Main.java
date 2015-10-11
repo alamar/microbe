@@ -10,14 +10,13 @@ import ru.yandex.bolts.collection.Tuple2List;
  * @author ilyak
  */
 public class Main {
-    public static int MICROBES = 10;
-    public static int GENES = 10;
-    public static float GENE_MUTATION_CHANCE = 0.05f;
+    public static int MICROBES = 100000;
+    public static int GENES = 100;
+    public static float GENE_MUTATION_CHANCE = 0.00864f;
     public static float MUTATION_POSITIVE_CHANCE = 0.1f;
     public static float NEGATIVE_EFFECT = 0.05f;
     public static float POSITIVE_EFFECT = 0.01f;
     public static float LUCK_RATIO = 0.3f;
-    
 
     public static void main(String[] args) {
         Random r = new Random();
@@ -25,7 +24,7 @@ public class Main {
         for (int i = 0; i < MICROBES; i++) {
             microbes.add(new Microbe(GENES));
         }
-        for (int s = 0; s < 50; s++) {
+        for (int s = 0; s < 500; s++) {
             float totalFitness = 0f;
             for (Microbe microbe : microbes) {
                 microbe.mutate(r, GENE_MUTATION_CHANCE, NEGATIVE_EFFECT, MUTATION_POSITIVE_CHANCE, POSITIVE_EFFECT);
