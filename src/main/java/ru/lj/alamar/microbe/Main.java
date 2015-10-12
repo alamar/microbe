@@ -43,8 +43,8 @@ public class Main {
         for (int s = 0; s < steps; s++) {
             float totalFitness = 0f;
             for (Microbe microbe : microbes) {
-                totalFitness += microbe.fitness();
                 microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect);
+                totalFitness += microbe.fitness();
             }
             float avgFitness = totalFitness / (float) microbes.size();
             microbes = selectOffspring(r, microbes, luckRatio);

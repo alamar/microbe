@@ -61,6 +61,7 @@ public class Microbe {
                 }
             }
         }
+        fitness = -1f;
     }
 
     private static float[][] OF_CHROMOSOMES = new float[0][0];
