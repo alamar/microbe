@@ -1,0 +1,11 @@
+You need Maven.
+
+To run models:
+
+mvn compile
+
+mvn exec:java -Dmodel=<model without .properties>
+
+for example, mvn exec:java -Dmodel=stable-monoploid
+
+It will produce <model>.txt with results as well as printing steps on stdout.

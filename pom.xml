@@ -38,6 +38,9 @@
       <configuration>
         <mainClass>ru.lj.alamar.microbe.Main</mainClass>
         <classpathScope>compile</classpathScope>
+        <arguments>
+          <argument>${model}</argument>
+        </arguments>
       </configuration>
     </plugin>
   </plugins>

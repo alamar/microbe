@@ -1,5 +1,11 @@
 package ru.lj.alamar.microbe;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.DecimalFormat;
+import java.util.Properties;
 import java.util.Random;
 
 import ru.yandex.bolts.collection.Cf;
@@ -10,46 +16,78 @@ import ru.yandex.bolts.collection.Tuple2List;
  * @author ilyak
  */
 public class Main {
-    public static int MICROBES = 100000;
-    public static int CHROMOSOMES = 1;
-    public static int GENES = 100;
-    // Actually grows a bit
-    // 867 is stable for some time but finally dives
-    public static float GENE_MUTATION_CHANCE = 0.00866f;
-    public static float MUTATION_POSITIVE_CHANCE = 0.1f;
-    public static float NEGATIVE_EFFECT = 0.05f;
-    public static float POSITIVE_EFFECT = 0.01f;
-    public static float LUCK_RATIO = 0.3f;
 
-    public static void main(String[] args) {
-        Random r = new Random(1444556354);
+    private static final DecimalFormat FMT = new DecimalFormat("0.#####");
+
+    public static void main(String[] args) throws Exception {
+        Properties model = loadModel(args[0]);
+        PrintWriter out = output(args[0]);
+        Random r = new Random(Integer.parseInt(model.getProperty("seed")));
         ListF<Microbe> microbes = Cf.arrayList();
-        for (int i = 0; i < MICROBES; i++) {
-            microbes.add(new Microbe(CHROMOSOMES, GENES));
+        int population = Integer.parseInt(model.getProperty("population"));
+        int chromosomes = Integer.parseInt(model.getProperty("chromosomes"));
+        int genes = Integer.parseInt(model.getProperty("genes"));
+        for (int i = 0; i < population; i++) {
+            microbes.add(new Microbe(chromosomes, genes));
         }
-        for (int s = 0; s < 10000; s++) {
+
+        float geneMutationChance = Float.parseFloat(model.getProperty("gene.mutation.chance"));
+        float negativeEffect = Float.parseFloat(model.getProperty("negative.effect"));
+        float mutationPositiveChance = Float.parseFloat(model.getProperty("mutation.positive.chance"));
+        float positiveEffect = Float.parseFloat(model.getProperty("positive.effect"));
+        float luckRatio = Float.parseFloat(model.getProperty("luck.ratio"));
+
+        print(out, "Running model: " + model.getProperty("title"));
+        print(out, "step\tpopulation\taverage fitness");
+        int steps = Integer.parseInt(model.getProperty("steps"));
+        for (int s = 0; s < steps; s++) {
             float totalFitness = 0f;
             for (Microbe microbe : microbes) {
-                microbe.mutate(r, GENE_MUTATION_CHANCE, NEGATIVE_EFFECT, MUTATION_POSITIVE_CHANCE, POSITIVE_EFFECT);
                 totalFitness += microbe.fitness();
+                microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect);
             }
             float avgFitness = totalFitness / (float) microbes.size();
-            microbes = selectOffspring(r, microbes);
+            microbes = selectOffspring(r, microbes, luckRatio);
             if (microbes.isEmpty()) {
                 break;
             }
-            System.out.println(s + "\t" + microbes.size() + "\t" + avgFitness);
+            print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness));
         }
+        out.close();
     }
 
-    static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population) {
+    static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio) {
         Tuple2List<Float, Microbe> withFitnessAndLuck = Tuple2List.arrayList();
         for (Microbe microbe : population) {
             if (microbe.isDead()) continue;
             float fitness = microbe.fitness();
-            withFitnessAndLuck.add(fitness * (1f - LUCK_RATIO) + r.nextFloat() * LUCK_RATIO, microbe);
-            withFitnessAndLuck.add(fitness * (1f - LUCK_RATIO) + r.nextFloat() * LUCK_RATIO, microbe.replicate(r));
+            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
+            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe.replicate(r));
         }
         return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
+    }
+
+    static void print(PrintWriter out, String line) throws IOException {
+        System.out.println(line);
+        out.println(line);
+    }
+
+    static PrintWriter output(String modelName) throws IOException {
+        return new PrintWriter(new File(modelName + ".txt"));
+    }
+
+    static Properties loadModel(String modelName) throws IOException {
+        FileInputStream stream = new FileInputStream(new File(modelName + ".properties"));
+        try {
+            Properties model = new Properties();
+            model.load(stream);
+            return model;
+        } finally {
+            try {
+                stream.close();
+            } catch (Exception e) {
+                System.err.println(e);
+            }
+        }
     }
 }
