@@ -13,7 +13,9 @@ public class Main {
     public static int MICROBES = 100000;
     public static int CHROMOSOMES = 1;
     public static int GENES = 100;
-    public static float GENE_MUTATION_CHANCE = 0.00867f;
+    // Actually grows a bit
+    // 867 is stable for some time but finally dives
+    public static float GENE_MUTATION_CHANCE = 0.00866f;
     public static float MUTATION_POSITIVE_CHANCE = 0.1f;
     public static float NEGATIVE_EFFECT = 0.05f;
     public static float POSITIVE_EFFECT = 0.01f;
