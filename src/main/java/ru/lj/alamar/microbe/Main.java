@@ -58,11 +58,23 @@ public class Main {
 
     static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio) {
         Tuple2List<Float, Microbe> withFitnessAndLuck = Tuple2List.arrayList();
+        float minFitness = 2f;
+        float maxFitness = 0f;
         for (Microbe microbe : population) {
             if (microbe.isDead()) continue;
             float fitness = microbe.fitness();
-            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
-            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe.replicate(r));
+            if (minFitness > fitness) {
+                minFitness = fitness;
+            }
+            if (maxFitness < fitness) {
+                maxFitness = fitness;
+            }
+        }
+        for (Microbe microbe : population) {
+            if (microbe.isDead()) continue;
+            float fitness = microbe.fitness();
+            withFitnessAndLuck.add((fitness - minFitness) / (maxFitness - minFitness) * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
+            withFitnessAndLuck.add((fitness - minFitness) / (maxFitness - minFitness) * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe.replicate(r));
         }
         return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
     }
