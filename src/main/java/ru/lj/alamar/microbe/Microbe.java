@@ -67,12 +67,13 @@ public class Microbe {
     private static float[][] OF_CHROMOSOMES = new float[0][0];
     // XXX Mutates (not in biological sense :)
     public Microbe replicate(Random r) {
-        ListF<float[]> doubled = Cf.arrayList();
+        ListF<float[]> twoCopies = Cf.arrayList();
         for (float[] chromosome : chromosomes) {
-            doubled.add(chromosome.clone());
-            doubled.add(chromosome);
+            twoCopies.add(chromosome.clone());
+            twoCopies.add(chromosome.clone());
         }
-        // XXX Require Random r
+        Collections.shuffle(twoCopies, r);
+        ListF<float[]> doubled = Cf.arrayList(chromosomes).plus(twoCopies.take(chromosomes.length));
         Collections.shuffle(doubled, r);
         chromosomes = doubled.take(chromosomes.length).toArray(OF_CHROMOSOMES);
         fitness = -1f;
