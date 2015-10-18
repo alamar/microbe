@@ -36,6 +36,7 @@ public class Main {
         float mutationPositiveChance = Float.parseFloat(model.getProperty("mutation.positive.chance"));
         float positiveEffect = Float.parseFloat(model.getProperty("positive.effect"));
         float luckRatio = Float.parseFloat(model.getProperty("luck.ratio"));
+        boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
 
         print(out, "Running model: " + model.getProperty("title"));
         print(out, "step\tpopulation\taverage fitness");
@@ -47,7 +48,7 @@ public class Main {
                 totalFitness += microbe.fitness();
             }
             float avgFitness = totalFitness / (float) microbes.size();
-            microbes = selectOffspring(r, microbes, luckRatio);
+            microbes = selectOffspring(r, microbes, luckRatio, inexactDuplication);
             if (microbes.isEmpty()) {
                 break;
             }
@@ -56,7 +57,7 @@ public class Main {
         out.close();
     }
 
-    static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio) {
+    static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio, boolean inexactDuplication) {
         Tuple2List<Float, Microbe> withFitnessAndLuck = Tuple2List.arrayList();
         float minFitness = 2f;
         float maxFitness = 0f;
@@ -74,7 +75,8 @@ public class Main {
             if (microbe.isDead()) continue;
             float fitness = microbe.fitness();
             withFitnessAndLuck.add((fitness - minFitness) / (maxFitness - minFitness) * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
-            withFitnessAndLuck.add((fitness - minFitness) / (maxFitness - minFitness) * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe.replicate(r));
+            withFitnessAndLuck.add((fitness - minFitness) / (maxFitness - minFitness) * (1f - luckRatio) + r.nextFloat() * luckRatio,
+                    microbe.replicate(r, inexactDuplication));
         }
         return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
     }
