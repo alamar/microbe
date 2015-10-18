@@ -21,8 +21,9 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         Properties model = loadModel(args[0]);
-        PrintWriter out = output(args[0]);
-        Random r = new Random(Integer.parseInt(model.getProperty("seed")));
+        String cmdlineSeed = (args.length >= 2 && !args[1].isEmpty()) ? args[1] : "";
+        PrintWriter out = output(args[0], cmdlineSeed);
+        Random r = new Random(Integer.parseInt(cmdlineSeed.isEmpty() ? model.getProperty("seed") : cmdlineSeed));
         ListF<Microbe> microbes = Cf.arrayList();
         int population = Integer.parseInt(model.getProperty("population"));
         int chromosomes = Integer.parseInt(model.getProperty("chromosomes"));
@@ -86,8 +87,8 @@ public class Main {
         out.println(line);
     }
 
-    static PrintWriter output(String modelName) throws IOException {
-        return new PrintWriter(new File(modelName + ".txt"));
+    static PrintWriter output(String modelName, String cmdlineSeed) throws IOException {
+        return new PrintWriter(new File(modelName + (cmdlineSeed.isEmpty() ? "" : ("-" + cmdlineSeed)) + ".txt"));
     }
 
     static Properties loadModel(String modelName) throws IOException {
