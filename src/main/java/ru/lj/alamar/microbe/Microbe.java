@@ -83,4 +83,8 @@ public class Microbe {
         fitness = -1f;
         return new Microbe(doubled.drop(chromosomes.length).toArray(OF_CHROMOSOMES));
     }
+
+    public float[][] getChromosomes() {
+        return chromosomes;
+    }
 }
