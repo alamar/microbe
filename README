@@ -9,3 +9,8 @@ mvn exec:java -Dmodel=<model without .properties>
 for example, mvn exec:java -Dmodel=stable-monoploid
 
 It will produce <model>.txt with results as well as printing steps on stdout.
+
+Bulk processing:
+for i in `cat seeds.txt`; do mvn exec:java -Dmodel=10-ploid -Dseed=$i; done
+
+bash merge.sh 10-ploid-*.txt > 10-ploids.txt
