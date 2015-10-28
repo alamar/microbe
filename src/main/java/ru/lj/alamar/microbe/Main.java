@@ -21,7 +21,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         Properties model = loadModel(args[0]);
-        String cmdlineSeed = (args.length >= 2 && !args[1].isEmpty()) ? args[1] : "";
+        String cmdlineSeed = (args.length >= 2 && args[1] != null && !args[1].isEmpty()) ? args[1] : "";
         PrintWriter out = output(args[0], cmdlineSeed);
         Random r = new Random(Integer.parseInt(cmdlineSeed.isEmpty() ? model.getProperty("seed") : cmdlineSeed));
         ListF<Microbe> microbes = Cf.arrayList();
@@ -29,7 +29,14 @@ public class Main {
         int chromosomes = Integer.parseInt(model.getProperty("chromosomes"));
         int genes = Integer.parseInt(model.getProperty("genes"));
         for (int i = 0; i < population; i++) {
-            microbes.add(new Microbe(chromosomes, genes));
+            microbes.add(new Microbe(chromosomes, genes, true));
+        }
+        String fixploidPopulation = model.getProperty("fixploid.population");
+        if (fixploidPopulation != null) {
+            int fp = Integer.parseInt(fixploidPopulation);
+            for (int i = 0; i < fp; i++) {
+                microbes.add(new Microbe(chromosomes, genes, false));
+            }
         }
 
         float geneMutationChance = Float.parseFloat(model.getProperty("gene.mutation.chance"));
@@ -44,9 +51,13 @@ public class Main {
         int steps = Integer.parseInt(model.getProperty("steps"));
         for (int s = 0; s < steps; s++) {
             float totalFitness = 0f;
+            int[] ploidy = new int[10];
             for (Microbe microbe : microbes) {
                 microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect);
                 totalFitness += microbe.fitness();
+                if (microbe.getPloidy() <= 9) {
+                    ploidy[microbe.isChangePloidy() ? microbe.getPloidy() : 0]++;
+                }
             }
             float avgFitness = totalFitness / (float) microbes.size();
             microbes = selectOffspring(r, microbes, luckRatio, inexactDuplication);
@@ -54,6 +65,7 @@ public class Main {
                 break;
             }
             print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness));
+            printPloidy(ploidy, microbes.size());
         }
         out.close();
     }
@@ -75,11 +87,22 @@ public class Main {
         for (Microbe microbe : population) {
             if (microbe.isDead()) continue;
             float fitness = microbe.fitness();
-            withFitnessAndLuck.add((fitness - minFitness) / (maxFitness - minFitness) * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
-            withFitnessAndLuck.add((fitness - minFitness) / (maxFitness - minFitness) * (1f - luckRatio) + r.nextFloat() * luckRatio,
+            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
+            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio,
                     microbe.replicate(r, inexactDuplication));
         }
         return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
+    }
+
+    private static final int BAR_WIDTH = 50;
+    static void printPloidy(int[] ploidy, int population) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
+            for (int b = 0; b < (ploidy[i] * BAR_WIDTH) / population; b++) {
+                sb.append(i == 0 ? "M" : Integer.toString(i));
+            }
+        }
+        System.out.println(sb.toString());
     }
 
     static void print(PrintWriter out, String line) throws IOException {

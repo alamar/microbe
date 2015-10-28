@@ -14,13 +14,16 @@ public class Microbe {
     public static final float NORMAL_FITNESS = 0.9f;
     public static final float ALIVE_FITNESS = 0.5f;
     private float[][] chromosomes;
+    boolean changePloidy;
     private float fitness = -1f;
 
-    protected Microbe(float[][] inheritedChromosomes) {
+    protected Microbe(float[][] inheritedChromosomes, boolean changePloidy) {
+        this.changePloidy = changePloidy;
         chromosomes = inheritedChromosomes;
     }
 
-    public Microbe(int ploidy, int numGenes) {
+    public Microbe(int ploidy, int numGenes, boolean changePloidy) {
+        this.changePloidy = changePloidy;
         chromosomes = new float[ploidy][numGenes];
         for (float[] chromosome : chromosomes) {
            for (int g = 0; g < numGenes; g++) {
@@ -70,21 +73,40 @@ public class Microbe {
         ListF<float[]> copies = Cf.arrayList();
         for (float[] chromosome : chromosomes) {
             copies.add(chromosome.clone());
-            if (inexact) {
+            if (inexact || changePloidy) {
                 copies.add(chromosome.clone());
             }
         }
         if (inexact) {
             Collections.shuffle(copies, r);
         }
-        ListF<float[]> doubled = copies.take(chromosomes.length).plus(chromosomes);
+        ListF<float[]> doubled = copies.take(Math.max(chromosomes.length, 2)).plus(chromosomes);
         Collections.shuffle(doubled, r);
-        chromosomes = doubled.take(chromosomes.length).toArray(OF_CHROMOSOMES);
+        int splitAt = chromosomes.length;
+        if (changePloidy) {
+            float adjust = r.nextFloat();
+            if (splitAt != 1 && adjust < 0.1f) {
+                splitAt--;
+            }
+            if (adjust > 0.9f) {
+                splitAt++;
+            }
+        }
+
+        chromosomes = doubled.take(Math.min(splitAt, 4)).toArray(OF_CHROMOSOMES);
         fitness = -1f;
-        return new Microbe(doubled.drop(chromosomes.length).toArray(OF_CHROMOSOMES));
+        return new Microbe(doubled.drop(splitAt).take(Math.min(chromosomes.length * 2 - splitAt, 4)).toArray(OF_CHROMOSOMES), changePloidy);
+    }
+
+    public int getPloidy() {
+        return chromosomes.length;
     }
 
     public float[][] getChromosomes() {
         return chromosomes;
+    }
+
+    public boolean isChangePloidy() {
+        return changePloidy;
     }
 }
