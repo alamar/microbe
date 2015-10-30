@@ -68,34 +68,41 @@ public class Microbe {
     }
 
     private static float[][] OF_CHROMOSOMES = new float[0][0];
+    private static final int MAX_CHANGING_PLOIDY = 6;
     // XXX Mutates (not in biological sense :)
-    public Microbe replicate(Random r, boolean inexact) {
+    public Microbe replicate(Random r, boolean inexact, float downsizeChance) {
         ListF<float[]> copies = Cf.arrayList();
+        int targetPloidy = chromosomes.length;
+        if (targetPloidy > 1 && downsizeChance > r.nextFloat()) {
+            targetPloidy = (targetPloidy + 1) / 2;
+        }
         for (float[] chromosome : chromosomes) {
             copies.add(chromosome.clone());
             if (inexact || changePloidy) {
                 copies.add(chromosome.clone());
             }
         }
-        if (inexact) {
+        if (inexact || changePloidy) {
             Collections.shuffle(copies, r);
         }
-        ListF<float[]> doubled = copies.take(Math.max(chromosomes.length, 2)).plus(chromosomes);
+        ListF<float[]> doubled = copies.take(Math.max(targetPloidy, 2)).plus(chromosomes);
         Collections.shuffle(doubled, r);
-        int splitAt = chromosomes.length;
+        int splitAt = targetPloidy;
         if (changePloidy) {
             float adjust = r.nextFloat();
-            if (splitAt != 1 && adjust < 0.1f) {
+            if (splitAt > 1 && adjust < 0.1f) {
                 splitAt--;
             }
-            if (adjust > 0.9f) {
+            if (adjust > 0.9f && splitAt < MAX_CHANGING_PLOIDY) {
                 splitAt++;
             }
         }
 
-        chromosomes = doubled.take(Math.min(splitAt, 4)).toArray(OF_CHROMOSOMES);
+        chromosomes = doubled.take(splitAt).toArray(OF_CHROMOSOMES);
         fitness = -1f;
-        return new Microbe(doubled.drop(splitAt).take(Math.min(chromosomes.length * 2 - splitAt, 4)).toArray(OF_CHROMOSOMES), changePloidy);
+        return new Microbe(doubled.drop(splitAt)
+                .take(Math.min(Math.max(targetPloidy * 2 - splitAt, 1), MAX_CHANGING_PLOIDY))
+                .toArray(OF_CHROMOSOMES), changePloidy);
     }
 
     public int getPloidy() {

@@ -45,6 +45,8 @@ public class Main {
         float positiveEffect = Float.parseFloat(model.getProperty("positive.effect"));
         float luckRatio = Float.parseFloat(model.getProperty("luck.ratio"));
         boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
+        String downsizeChanceString = model.getProperty("downsize.chance");
+        float downsizeChance = (downsizeChanceString == null) ? 0f : Float.parseFloat(downsizeChanceString);
 
         print(out, "Running model: " + model.getProperty("title"));
         print(out, "step\tpopulation\taverage fitness");
@@ -60,17 +62,17 @@ public class Main {
                 }
             }
             float avgFitness = totalFitness / (float) microbes.size();
-            microbes = selectOffspring(r, microbes, luckRatio, inexactDuplication);
+            microbes = selectOffspring(r, microbes, luckRatio, inexactDuplication, downsizeChance);
             if (microbes.isEmpty()) {
                 break;
             }
             print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness));
-            printPloidy(ploidy, microbes.size());
+            printPloidy(out, ploidy, microbes.size());
         }
         out.close();
     }
 
-    static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio, boolean inexactDuplication) {
+    static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio, boolean inexactDuplication, Float downsizeChance) {
         Tuple2List<Float, Microbe> withFitnessAndLuck = Tuple2List.arrayList();
         float minFitness = 2f;
         float maxFitness = 0f;
@@ -89,20 +91,20 @@ public class Main {
             float fitness = microbe.fitness();
             withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
             withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio,
-                    microbe.replicate(r, inexactDuplication));
+                    microbe.replicate(r, inexactDuplication, downsizeChance));
         }
         return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
     }
 
     private static final int BAR_WIDTH = 50;
-    static void printPloidy(int[] ploidy, int population) {
+    static void printPloidy(PrintWriter out, int[] ploidy, int population) throws IOException {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 10; i++) {
-            for (int b = 0; b < (ploidy[i] * BAR_WIDTH) / population; b++) {
+            for (int b = 0; b < (ploidy[i] * BAR_WIDTH + population / 2) / population; b++) {
                 sb.append(i == 0 ? "M" : Integer.toString(i));
             }
         }
-        System.out.println(sb.toString());
+        print(out, sb.toString());
     }
 
     static void print(PrintWriter out, String line) throws IOException {

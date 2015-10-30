@@ -21,7 +21,7 @@ import java.util.Set;
 public class MicrobeTest {
     @Test
     public void testNew() {
-        Microbe microbe = new Microbe(1, 10);
+        Microbe microbe = new Microbe(1, 10, false);
         assertEquals(1f, microbe.fitness(), 0.001f);
         float[][] chromosomes = microbe.getChromosomes();
         assertEquals(1, chromosomes.length);
@@ -31,13 +31,13 @@ public class MicrobeTest {
 
     @Test
     public void testMutate() {
-        Microbe microbe = new Microbe(1, 10);
+        Microbe microbe = new Microbe(1, 10, false);
         Random r = new Random(0);
         microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.05f);
         assertEquals(0.092f, microbe.fitness(), 0.001f);
         assertArrayEquals(new float[] {0.9f, 0.9f, 0.4f, 0.9f, 0.4f, 0.4f, 0.9f, 0.9f, 0.95f, 0.9f}, microbe.getChromosomes()[0], 0.001f);
 
-        Microbe offspring = microbe.replicate(r, true);
+        Microbe offspring = microbe.replicate(r, true, 0f);
         microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.05f);
         assertEquals(0.092f, offspring.fitness(), 0.001f);
         assertArrayEquals(new float[] {0.9f, 0.9f, 0.4f, 0.9f, 0.4f, 0.4f, 0.9f, 0.9f, 0.95f, 0.9f}, offspring.getChromosomes()[0], 0.001f);
@@ -47,7 +47,7 @@ public class MicrobeTest {
 
     @Test
     public void testPloidy() {
-        Microbe microbe = new Microbe(6, 10);
+        Microbe microbe = new Microbe(6, 10, false);
         Random r = new Random(0);
         microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.05f);
 
@@ -58,7 +58,7 @@ public class MicrobeTest {
         assertEquals(1.383f, microbe.fitness(), 0.001f);
         assertArrayEquals(new float[] {0.9f, 0.9f, 0.4f, 0.9f, 0.4f, 0.4f, 0.9f, 0.9f, 0.95f, 0.9f}, microbe.getChromosomes()[0], 0.001f);
         assertArrayEquals(new float[] {0.9f, 0.9f, 0.9f, 0.4f, 0.95f, 0.95f, 0.9f, 0.4f, 0.95f, 0.9f}, microbe.getChromosomes()[1], 0.001f);
-        Microbe offspring = microbe.replicate(r, false);
+        Microbe offspring = microbe.replicate(r, false, 0f);
         for (int i = 0; i < 6; i++) {
             float[] chromosome1 = offspring.getChromosomes()[i];
             float[] chromosome2 = microbe.getChromosomes()[i];
