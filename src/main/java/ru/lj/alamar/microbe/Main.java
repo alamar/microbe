@@ -47,6 +47,8 @@ public class Main {
         boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
         String downsizeChanceString = model.getProperty("downsize.chance");
         float downsizeChance = (downsizeChanceString == null) ? 0f : Float.parseFloat(downsizeChanceString);
+        String conversionChanceString = model.getProperty("conversion.chance");
+        float conversionChance = (conversionChanceString == null) ? 0f : Float.parseFloat(conversionChanceString);
 
         print(out, "Running model: " + model.getProperty("title"));
         print(out, "step\tpopulation\taverage fitness");
@@ -55,7 +57,7 @@ public class Main {
             float totalFitness = 0f;
             int[] ploidy = new int[10];
             for (Microbe microbe : microbes) {
-                microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect);
+                microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect, conversionChance);
                 totalFitness += microbe.fitness();
                 if (microbe.getPloidy() <= 9) {
                     ploidy[microbe.isChangePloidy() ? microbe.getPloidy() : 0]++;
