@@ -56,7 +56,7 @@ public class Microbe {
     public void mutate(Random r, float geneMutationChance, float negativeModifier, float mutationPositiveChance, float positiveModifier, float conversionChance) {
         for (float[] chromosome : chromosomes) {
             for (int g = 0; g < chromosome.length; g++) {
-                if (r.nextFloat() < conversionChance) {
+                if (conversionChance > 0f && r.nextFloat() < conversionChance) {
                     chromosome[g] = chromosomes[r.nextInt(chromosomes.length)][g];
                 }
                 if (r.nextFloat() > geneMutationChance) continue;

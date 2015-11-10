@@ -33,12 +33,12 @@ public class MicrobeTest {
     public void testMutate() {
         Microbe microbe = new Microbe(1, 10, false);
         Random r = new Random(0);
-        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.05f);
+        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.05f, 0f);
         assertEquals(0.092f, microbe.fitness(), 0.001f);
         assertArrayEquals(new float[] {0.9f, 0.9f, 0.4f, 0.9f, 0.4f, 0.4f, 0.9f, 0.9f, 0.95f, 0.9f}, microbe.getChromosomes()[0], 0.001f);
 
         Microbe offspring = microbe.replicate(r, true, 0f);
-        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.05f);
+        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.05f, 0f);
         assertEquals(0.092f, offspring.fitness(), 0.001f);
         assertArrayEquals(new float[] {0.9f, 0.9f, 0.4f, 0.9f, 0.4f, 0.4f, 0.9f, 0.9f, 0.95f, 0.9f}, offspring.getChromosomes()[0], 0.001f);
 
@@ -49,7 +49,7 @@ public class MicrobeTest {
     public void testPloidy() {
         Microbe microbe = new Microbe(6, 10, false);
         Random r = new Random(0);
-        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.05f);
+        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.05f, 0f);
 
         Set<String> chromosomes = Cf.hashSet();
         for (float[] chromosome : microbe.getChromosomes()) chromosomes.add(Arrays.toString(chromosome));
