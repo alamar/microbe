@@ -28,13 +28,13 @@ public class Main {
         int chromosomes = Integer.parseInt(model.getProperty("chromosomes"));
         int genes = Integer.parseInt(model.getProperty("genes"));
         for (int i = 0; i < population; i++) {
-            microbes.add(new Microbe(chromosomes, genes, true));
+            microbes.add(new Microbe(chromosomes, genes, false));
         }
-        String fixploidPopulation = model.getProperty("fixploid.population");
-        if (fixploidPopulation != null) {
-            int fp = Integer.parseInt(fixploidPopulation);
-            for (int i = 0; i < fp; i++) {
-                microbes.add(new Microbe(chromosomes, genes, false));
+        String variploidPopulation = model.getProperty("variploid.population");
+        if (variploidPopulation != null) {
+            int vp = Integer.parseInt(variploidPopulation);
+            for (int i = 0; i < vp; i++) {
+                microbes.add(new Microbe(chromosomes, genes, true));
             }
         }
 
@@ -52,7 +52,7 @@ public class Main {
         int horizontalTransfers = horizontalTransfersString == null ? 0 : Integer.parseInt(horizontalTransfersString);
         boolean mitosis = "true".equalsIgnoreCase(model.getProperty("mitosis"));
 
-        print(out, "Running model: " + model.getProperty("title"));
+        print(out, "Running model: " + args[0]);
         print(out, "step\tpopulation\taverage fitness");
         int steps = Integer.parseInt(model.getProperty("steps"));
         for (int s = 0; s < steps; s++) {
@@ -76,7 +76,7 @@ public class Main {
                 break;
             }
             print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness));
-            if (population > 0) {
+            if (variploidPopulation != null) {
                 printPloidy(out, ploidy, microbes.size());
             }
         }
@@ -100,11 +100,11 @@ public class Main {
     }
 
     static PrintWriter output(String modelName, String cmdlineSeed) throws IOException {
-        return new PrintWriter(new File(modelName + (cmdlineSeed.isEmpty() ? "" : ("-" + cmdlineSeed)) + ".txt"));
+        return new PrintWriter(new File("models/" + modelName + (cmdlineSeed.isEmpty() ? "" : ("-" + cmdlineSeed)) + ".txt"));
     }
 
     static Properties loadModel(String modelName) throws IOException {
-        FileInputStream stream = new FileInputStream(new File(modelName + ".properties"));
+        FileInputStream stream = new FileInputStream(new File("models/" + modelName + ".properties"));
         try {
             Properties model = new Properties();
             model.load(stream);
