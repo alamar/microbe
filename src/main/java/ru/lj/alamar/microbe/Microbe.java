@@ -5,6 +5,7 @@ import java.util.Random;
 
 import ru.yandex.bolts.collection.Cf;
 import ru.yandex.bolts.collection.ListF;
+import ru.yandex.bolts.collection.Tuple2List;
 
 /**
  * @author ilyak
@@ -70,8 +71,19 @@ public class Microbe {
         fitness = -1f;
     }
 
+    public void horizontalTransfer(Random r, Microbe donor) {
+        int genes = chromosomes[0].length;
+        int startingGene = r.nextInt(genes);
+        int fragmentLength = 1 + genes / 20 + r.nextInt(genes / 10 + 1);
+        int targetChromosome = r.nextInt(chromosomes.length);
+        int sourceChromosome = r.nextInt(donor.getChromosomes().length);
+        for (int g = startingGene; g < startingGene + fragmentLength; g++) {
+            chromosomes[targetChromosome][g % genes] = donor.getChromosomes()[sourceChromosome][g % genes];
+        }
+    }
+
     private static float[][] OF_CHROMOSOMES = new float[0][0];
-    private static final int MAX_CHANGING_PLOIDY = 6;
+    private static final int MAX_CHANGING_PLOIDY = 10;
     // XXX Mutates (not in biological sense :)
     public Microbe replicate(Random r, boolean inexact, float downsizeChance) {
         ListF<float[]> copies = Cf.arrayList();
@@ -106,6 +118,38 @@ public class Microbe {
         return new Microbe(doubled.drop(splitAt)
                 .take(Math.min(Math.max(targetPloidy * 2 - splitAt, 1), MAX_CHANGING_PLOIDY))
                 .toArray(OF_CHROMOSOMES), changePloidy);
+    }
+
+    public Microbe mitosis() {
+        float[][] siblingChromosomes = new float[chromosomes.length][];
+        for (int c = 0; c < chromosomes.length; c++) {
+            siblingChromosomes[c] = chromosomes[c].clone();
+        }
+        return new Microbe(siblingChromosomes, changePloidy);
+    }
+
+    public static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio, boolean inexactDuplication, Float downsizeChance, boolean mitosis) {
+        Tuple2List<Float, Microbe> withFitnessAndLuck = Tuple2List.arrayList();
+        float minFitness = 2f;
+        float maxFitness = 0f;
+        for (Microbe microbe : population) {
+            if (microbe.isDead()) continue;
+            float fitness = microbe.fitness();
+            if (minFitness > fitness) {
+                minFitness = fitness;
+            }
+            if (maxFitness < fitness) {
+                maxFitness = fitness;
+            }
+        }
+        for (Microbe microbe : population) {
+            if (microbe.isDead()) continue;
+            float fitness = microbe.fitness();
+            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
+            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio,
+                    mitosis ? microbe.mitosis() : microbe.replicate(r, inexactDuplication, downsizeChance));
+        }
+        return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
     }
 
     public int getPloidy() {

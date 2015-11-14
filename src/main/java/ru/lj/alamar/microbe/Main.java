@@ -10,7 +10,6 @@ import java.util.Random;
 
 import ru.yandex.bolts.collection.Cf;
 import ru.yandex.bolts.collection.ListF;
-import ru.yandex.bolts.collection.Tuple2List;
 
 /**
  * @author ilyak
@@ -49,6 +48,9 @@ public class Main {
         float downsizeChance = (downsizeChanceString == null) ? 0f : Float.parseFloat(downsizeChanceString);
         String conversionChanceString = model.getProperty("conversion.chance");
         float conversionChance = (conversionChanceString == null) ? 0f : Float.parseFloat(conversionChanceString);
+        String horizontalTransfersString = model.getProperty("horizontal.transfers");
+        int horizontalTransfers = horizontalTransfersString == null ? 0 : Integer.parseInt(horizontalTransfersString);
+        boolean mitosis = "true".equalsIgnoreCase(model.getProperty("mitosis"));
 
         print(out, "Running model: " + model.getProperty("title"));
         print(out, "step\tpopulation\taverage fitness");
@@ -63,39 +65,22 @@ public class Main {
                     ploidy[microbe.isChangePloidy() ? microbe.getPloidy() : 0]++;
                 }
             }
+            for (int t = 0; t < horizontalTransfers; t++) {
+                Microbe donor = microbes.get(r.nextInt(microbes.size()));
+                Microbe recipient = microbes.get(r.nextInt(microbes.size()));
+                recipient.horizontalTransfer(r, donor);
+            }
             float avgFitness = totalFitness / (float) microbes.size();
-            microbes = selectOffspring(r, microbes, luckRatio, inexactDuplication, downsizeChance);
+            microbes = Microbe.selectOffspring(r, microbes, luckRatio, inexactDuplication, downsizeChance, mitosis);
             if (microbes.isEmpty()) {
                 break;
             }
             print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness));
-            printPloidy(out, ploidy, microbes.size());
+            if (population > 0) {
+                printPloidy(out, ploidy, microbes.size());
+            }
         }
         out.close();
-    }
-
-    static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio, boolean inexactDuplication, Float downsizeChance) {
-        Tuple2List<Float, Microbe> withFitnessAndLuck = Tuple2List.arrayList();
-        float minFitness = 2f;
-        float maxFitness = 0f;
-        for (Microbe microbe : population) {
-            if (microbe.isDead()) continue;
-            float fitness = microbe.fitness();
-            if (minFitness > fitness) {
-                minFitness = fitness;
-            }
-            if (maxFitness < fitness) {
-                maxFitness = fitness;
-            }
-        }
-        for (Microbe microbe : population) {
-            if (microbe.isDead()) continue;
-            float fitness = microbe.fitness();
-            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
-            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio,
-                    microbe.replicate(r, inexactDuplication, downsizeChance));
-        }
-        return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
     }
 
     private static final int BAR_WIDTH = 50;
