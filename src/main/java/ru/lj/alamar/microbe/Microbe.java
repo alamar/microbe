@@ -12,7 +12,7 @@ import ru.yandex.bolts.collection.Tuple2List;
  */
 public class Microbe {
     // fitness: 0.0 to 1.0
-    public static final float NORMAL_FITNESS = 0.9f;
+    public static final float NORMAL_FITNESS = 0.99f;
     public static final float ALIVE_FITNESS = 0.5f;
     private float[][] chromosomes;
     boolean changePloidy;
@@ -70,9 +70,9 @@ public class Microbe {
                 }
                 if (r.nextFloat() > geneMutationChance) continue;
                 if (r.nextFloat() < mutationPositiveChance) {
-                    chromosome[g] = Math.min(1f, chromosome[g] + positiveModifier);
+                    chromosome[g] = Math.min(1f, 1f - (1f - chromosome[g]) * (1f - positiveModifier));
                 } else {
-                    chromosome[g] = Math.max(0f, chromosome[g] - negativeModifier);
+                    chromosome[g] = Math.max(0f, chromosome[g] * (1f - negativeModifier));
                 }
             }
         }
