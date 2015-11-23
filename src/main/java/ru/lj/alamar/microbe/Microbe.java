@@ -54,11 +54,19 @@ public class Microbe {
         return fitness() < ALIVE_FITNESS;
     }
 
-    public void mutate(Random r, float geneMutationChance, float negativeModifier, float mutationPositiveChance, float positiveModifier, float conversionChance) {
+    public void mutate(Random r, float geneMutationChance, float negativeModifier, float mutationPositiveChance, float positiveModifier,
+            float conversionChance, float crossingChance)
+    {
         for (float[] chromosome : chromosomes) {
             for (int g = 0; g < chromosome.length; g++) {
                 if (conversionChance > 0f && r.nextFloat() < conversionChance) {
                     chromosome[g] = chromosomes[r.nextInt(chromosomes.length)][g];
+                }
+                else if (crossingChance > 0f && r.nextFloat() < crossingChance) {
+                    int peer = r.nextInt(chromosomes.length);
+                    float gswp = chromosomes[peer][g];
+                    chromosomes[peer][g] = chromosome[g];
+                    chromosome[g] = gswp;
                 }
                 if (r.nextFloat() > geneMutationChance) continue;
                 if (r.nextFloat() < mutationPositiveChance) {
@@ -80,6 +88,12 @@ public class Microbe {
         for (int g = startingGene; g < startingGene + fragmentLength; g++) {
             chromosomes[targetChromosome][g % genes] = donor.getChromosomes()[sourceChromosome][g % genes];
         }
+    }
+
+    public void chromosomeSubstitution(Random r, Microbe donor) {
+        int targetChromosome = r.nextInt(chromosomes.length);
+        int sourceChromosome = r.nextInt(donor.getChromosomes().length);
+        chromosomes[targetChromosome] = donor.getChromosomes()[sourceChromosome].clone();
     }
 
     private static float[][] OF_CHROMOSOMES = new float[0][0];

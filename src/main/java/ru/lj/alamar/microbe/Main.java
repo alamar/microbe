@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Arrays;
 
 import ru.yandex.bolts.collection.Cf;
 import ru.yandex.bolts.collection.ListF;
@@ -43,13 +44,20 @@ public class Main {
         float mutationPositiveChance = Float.parseFloat(model.getProperty("mutation.positive.chance"));
         float positiveEffect = Float.parseFloat(model.getProperty("positive.effect"));
         float luckRatio = Float.parseFloat(model.getProperty("luck.ratio"));
-        boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
+
         String downsizeChanceString = model.getProperty("downsize.chance");
         float downsizeChance = (downsizeChanceString == null) ? 0f : Float.parseFloat(downsizeChanceString);
         String conversionChanceString = model.getProperty("conversion.chance");
         float conversionChance = (conversionChanceString == null) ? 0f : Float.parseFloat(conversionChanceString);
+        String crossingChanceString = model.getProperty("crossing.chance");
+        float crossingChance = (crossingChanceString == null) ? 0f : Float.parseFloat(crossingChanceString);
+
         String horizontalTransfersString = model.getProperty("horizontal.transfers");
         int horizontalTransfers = horizontalTransfersString == null ? 0 : Integer.parseInt(horizontalTransfersString);
+        String chromosomeSubstitutionsString = model.getProperty("chromosome.substitutions");
+        int chromosomeSubstitutions = chromosomeSubstitutionsString == null ? 0 : Integer.parseInt(chromosomeSubstitutionsString);
+
+        boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
         boolean mitosis = "true".equalsIgnoreCase(model.getProperty("mitosis"));
 
         print(out, "Running model: " + args[0]);
@@ -59,7 +67,7 @@ public class Main {
             float totalFitness = 0f;
             int[] ploidy = new int[10];
             for (Microbe microbe : microbes) {
-                microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect, conversionChance);
+                microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect, conversionChance, crossingChance);
                 totalFitness += microbe.fitness();
                 if (microbe.getPloidy() <= 9) {
                     ploidy[microbe.isChangePloidy() ? microbe.getPloidy() : 0]++;
@@ -69,6 +77,11 @@ public class Main {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
                 recipient.horizontalTransfer(r, donor);
+            }
+            for (int t = 0; t < chromosomeSubstitutions; t++) {
+                Microbe donor = microbes.get(r.nextInt(microbes.size()));
+                Microbe recipient = microbes.get(r.nextInt(microbes.size()));
+                recipient.chromosomeSubstitution(r, donor);
             }
             float avgFitness = totalFitness / (float) microbes.size();
             microbes = Microbe.selectOffspring(r, microbes, luckRatio, inexactDuplication, downsizeChance, mitosis);
@@ -80,6 +93,16 @@ public class Main {
                 printPloidy(out, ploidy, microbes.size());
             }
         }
+        /*for (Microbe microbe : microbes.shuffle()) {
+            for (float[] chromosome : microbe.getChromosomes()) {
+                for (float gene : chromosome) {
+                    out.print(FMT.format(gene));
+                    out.print("\t");
+                }
+                out.println();
+            }
+            out.println();
+        }*/
         out.close();
     }
 
