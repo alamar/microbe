@@ -20,9 +20,11 @@ public class Main {
     private static final DecimalFormat FMT = new DecimalFormat("0.#####");
 
     public static void main(String[] args) throws Exception {
-        Properties model = loadModel(args[0]);
         String cmdlineSeed = (args.length >= 2 && args[1] != null && !args[1].isEmpty()) ? args[1] : "";
         PrintWriter out = output(args[0], cmdlineSeed);
+        try {
+        Properties model = loadModel(args[0], out);
+        print(out, "model = " + args[0]);
         Random r = new Random(Integer.parseInt(cmdlineSeed.isEmpty() ? model.getProperty("seed") : cmdlineSeed));
         ListF<Microbe> microbes = Cf.arrayList();
         int population = Integer.parseInt(model.getProperty("population"));
@@ -31,12 +33,9 @@ public class Main {
         for (int i = 0; i < population; i++) {
             microbes.add(new Microbe(chromosomes, genes, false));
         }
-        String variploidPopulation = model.getProperty("variploid.population");
-        if (variploidPopulation != null) {
-            int vp = Integer.parseInt(variploidPopulation);
-            for (int i = 0; i < vp; i++) {
-                microbes.add(new Microbe(chromosomes, genes, true));
-            }
+        int variploidPopulation = Integer.parseInt(model.getProperty("variploid.population"));
+        for (int i = 0; i < variploidPopulation; i++) {
+            microbes.add(new Microbe(chromosomes, genes, true));
         }
 
         float geneMutationChance = Float.parseFloat(model.getProperty("gene.mutation.chance"));
@@ -45,24 +44,18 @@ public class Main {
         float positiveEffect = Float.parseFloat(model.getProperty("positive.effect"));
         float luckRatio = Float.parseFloat(model.getProperty("luck.ratio"));
 
-        String downsizeChanceString = model.getProperty("downsize.chance");
-        float downsizeChance = (downsizeChanceString == null) ? 0f : Float.parseFloat(downsizeChanceString);
-        String conversionChanceString = model.getProperty("conversion.chance");
-        float conversionChance = (conversionChanceString == null) ? 0f : Float.parseFloat(conversionChanceString);
-        String crossingChanceString = model.getProperty("crossing.chance");
-        float crossingChance = (crossingChanceString == null) ? 0f : Float.parseFloat(crossingChanceString);
+        float downsizeChance = Float.parseFloat(model.getProperty("downsize.chance"));
+        float conversionChance = Float.parseFloat(model.getProperty("conversion.chance"));
+        float crossingChance = Float.parseFloat(model.getProperty("crossing.chance"));
 
-        String horizontalTransfersString = model.getProperty("horizontal.transfers");
-        int horizontalTransfers = horizontalTransfersString == null ? 0 : Integer.parseInt(horizontalTransfersString);
-        String chromosomeSubstitutionsString = model.getProperty("chromosome.substitutions");
-        int chromosomeSubstitutions = chromosomeSubstitutionsString == null ? 0 : Integer.parseInt(chromosomeSubstitutionsString);
+        int horizontalTransfers = Integer.parseInt(model.getProperty("horizontal.transfers"));
+        int chromosomeSubstitutions = Integer.parseInt(model.getProperty("chromosome.substitutions"));
 
         boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
         boolean mitosis = "true".equalsIgnoreCase(model.getProperty("mitosis"));
 
-        print(out, "Running model: " + args[0]);
-        print(out, "step\tpopulation\taverage fitness");
         int steps = Integer.parseInt(model.getProperty("steps"));
+        print(out, "step\tpopulation\taverage fitness");
         for (int s = 0; s < steps; s++) {
             float totalFitness = 0f;
             int[] ploidy = new int[10];
@@ -89,7 +82,7 @@ public class Main {
                 break;
             }
             print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness));
-            if (variploidPopulation != null) {
+            if (variploidPopulation > 0) {
                 printPloidy(out, ploidy, microbes.size());
             }
         }
@@ -103,7 +96,9 @@ public class Main {
             }
             out.println();
         }*/
-        out.close();
+        } finally {
+            out.close();
+        }
     }
 
     private static final int BAR_WIDTH = 50;
@@ -117,7 +112,7 @@ public class Main {
         print(out, sb.toString());
     }
 
-    static void print(PrintWriter out, String line) throws IOException {
+    static void print(PrintWriter out, String line) {
         System.out.println(line);
         out.println(line);
     }
@@ -126,12 +121,30 @@ public class Main {
         return new PrintWriter(new File("models/" + modelName + (cmdlineSeed.isEmpty() ? "" : ("-" + cmdlineSeed)) + ".txt"));
     }
 
-    static Properties loadModel(String modelName) throws IOException {
+    static Properties loadModel(String modelName, final PrintWriter out) throws IOException {
+        Properties model = new Properties() {
+            public String getProperty(String name) {
+                String value = super.getProperty(name);
+                print(out, name + " = " + value);
+                return value;
+            }
+        };
+
+        loadPropertiesFile(model, "default");
+        loadPropertiesFile(model, modelName);
+        String baseModelName = model.getProperty("base.model");
+        if (baseModelName != null) {
+            // No support for nesting!
+            loadPropertiesFile(model, baseModelName);
+            loadPropertiesFile(model, modelName);
+        }
+        return model;
+    }
+
+    static void loadPropertiesFile(Properties model, String modelName) throws IOException {
         FileInputStream stream = new FileInputStream(new File("models/" + modelName + ".properties"));
         try {
-            Properties model = new Properties();
             model.load(stream);
-            return model;
         } finally {
             try {
                 stream.close();
@@ -139,5 +152,6 @@ public class Main {
                 System.err.println(e);
             }
         }
+
     }
 }
