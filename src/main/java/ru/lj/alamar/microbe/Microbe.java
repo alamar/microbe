@@ -101,7 +101,7 @@ public class Microbe {
     public Microbe replicate(Random r, boolean inexact, int maxChromosomes, float downsizeChance) {
         ListF<float[]> copies = Cf.arrayList();
         int targetPloidy = chromosomes.length;
-        if (changePloidy && targetPloidy > 1 && downsizeChance > r.nextFloat()) {
+        if (downsizeChance > 0f && targetPloidy > 1 && downsizeChance > r.nextFloat()) {
             targetPloidy = (targetPloidy + 1) / 2;
         }
         for (float[] chromosome : chromosomes) {
@@ -128,9 +128,11 @@ public class Microbe {
 
         chromosomes = doubled.take(splitAt).toArray(OF_CHROMOSOMES);
         fitness = -1f;
-        return new Microbe(doubled.drop(splitAt)
+
+        float[][] siblingChromosomes = doubled.drop(splitAt)
                 .take(Math.min(Math.max(targetPloidy * 2 - splitAt, 1), changePloidy ? maxChromosomes : targetPloidy))
-                .toArray(OF_CHROMOSOMES), changePloidy);
+                .toArray(OF_CHROMOSOMES);
+        return new Microbe(siblingChromosomes, changePloidy);
     }
 
     public Microbe mitosis() {
