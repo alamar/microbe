@@ -1,4 +1,5 @@
 #!/bin/bash
+# cat seeds.txt | xargs -I_ -P3 mvn exec:java -Dmodel=default -Dseed=_
 
 for i in $@; do (echo $i | sed 's/.txt//'; awk -F $'\t' '{if ($2 == 100000) {print $3}}' $i) > $i.tmp.txt; done
 
