@@ -48,6 +48,7 @@ public class Main {
         float conversionChance = Float.parseFloat(model.getProperty("conversion.chance"));
         float crossingChance = Float.parseFloat(model.getProperty("crossing.chance"));
 
+        int maxVariploidChromosomes = Integer.parseInt(model.getProperty("max.variploid.chromosomes"));
         int horizontalTransfers = Integer.parseInt(model.getProperty("horizontal.transfers"));
         int chromosomeSubstitutions = Integer.parseInt(model.getProperty("chromosome.substitutions"));
 
@@ -77,7 +78,7 @@ public class Main {
                 recipient.chromosomeSubstitution(r, donor);
             }
             float avgFitness = totalFitness / (float) microbes.size();
-            microbes = Microbe.selectOffspring(r, microbes, luckRatio, inexactDuplication, downsizeChance, mitosis);
+            microbes = Microbe.selectOffspring(r, microbes, luckRatio, maxVariploidChromosomes, inexactDuplication, downsizeChance, mitosis);
             if (microbes.isEmpty()) {
                 break;
             }

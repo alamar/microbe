@@ -37,7 +37,7 @@ public class MicrobeTest {
         assertEquals(0.125f, microbe.fitness(), 0.001f);
         assertArrayEquals(new float[] {0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, microbe.getChromosomes()[0], 0.0005f);
 
-        Microbe offspring = microbe.replicate(r, true, 0f);
+        Microbe offspring = microbe.replicate(r, true, 10, 0f);
         microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f, 0f, 0f);
         assertEquals(0.125f, offspring.fitness(), 0.001f);
         assertArrayEquals(new float[] {0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, offspring.getChromosomes()[0], 0.0005f);
@@ -58,7 +58,7 @@ public class MicrobeTest {
         assertEquals(1.006f, microbe.fitness(), 0.0005f);
         assertArrayEquals(new float[] {0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, microbe.getChromosomes()[0], 0.0005f);
         assertArrayEquals(new float[] {0.99f, 0.99f, 0.99f, 0.495f, 0.991f, 0.991f, 0.99f, 0.495f, 0.991f, 0.99f}, microbe.getChromosomes()[1], 0.0005f);
-        Microbe offspring = microbe.replicate(r, false, 0f);
+        Microbe offspring = microbe.replicate(r, false, 0, 0f);
         for (int i = 0; i < 6; i++) {
             float[] chromosome1 = offspring.getChromosomes()[i];
             float[] chromosome2 = microbe.getChromosomes()[i];

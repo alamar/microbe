@@ -97,12 +97,11 @@ public class Microbe {
     }
 
     private static float[][] OF_CHROMOSOMES = new float[0][0];
-    private static final int MAX_CHANGING_PLOIDY = 10;
     // XXX Mutates (not in biological sense :)
-    public Microbe replicate(Random r, boolean inexact, float downsizeChance) {
+    public Microbe replicate(Random r, boolean inexact, int maxChromosomes, float downsizeChance) {
         ListF<float[]> copies = Cf.arrayList();
         int targetPloidy = chromosomes.length;
-        if (targetPloidy > 1 && downsizeChance > r.nextFloat()) {
+        if (changePloidy && targetPloidy > 1 && downsizeChance > r.nextFloat()) {
             targetPloidy = (targetPloidy + 1) / 2;
         }
         for (float[] chromosome : chromosomes) {
@@ -122,7 +121,7 @@ public class Microbe {
             if (splitAt > 1 && adjust < 0.1f) {
                 splitAt--;
             }
-            if (adjust > 0.9f && splitAt < MAX_CHANGING_PLOIDY) {
+            if (adjust > 0.9f && splitAt < maxChromosomes) {
                 splitAt++;
             }
         }
@@ -130,7 +129,7 @@ public class Microbe {
         chromosomes = doubled.take(splitAt).toArray(OF_CHROMOSOMES);
         fitness = -1f;
         return new Microbe(doubled.drop(splitAt)
-                .take(Math.min(Math.max(targetPloidy * 2 - splitAt, 1), MAX_CHANGING_PLOIDY))
+                .take(Math.min(Math.max(targetPloidy * 2 - splitAt, 1), changePloidy ? maxChromosomes : targetPloidy))
                 .toArray(OF_CHROMOSOMES), changePloidy);
     }
 
@@ -142,7 +141,8 @@ public class Microbe {
         return new Microbe(siblingChromosomes, changePloidy);
     }
 
-    public static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio, boolean inexactDuplication, Float downsizeChance, boolean mitosis) {
+    public static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio,
+            int maxChromosomes, boolean inexactDuplication, Float downsizeChance, boolean mitosis) {
         Tuple2List<Float, Microbe> withFitnessAndLuck = Tuple2List.arrayList();
         float minFitness = 2f;
         float maxFitness = 0f;
@@ -161,7 +161,7 @@ public class Microbe {
             float fitness = microbe.fitness();
             withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
             withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio,
-                    mitosis ? microbe.mitosis() : microbe.replicate(r, inexactDuplication, downsizeChance));
+                    mitosis ? microbe.mitosis() : microbe.replicate(r, inexactDuplication, maxChromosomes, downsizeChance));
         }
         return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
     }
