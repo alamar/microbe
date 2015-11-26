@@ -121,7 +121,7 @@ public class Microbe {
                 Collections.shuffle(copies, r);
             }
         }
-        ListF<float[]> doubled = copies.take(Math.max(targetPloidy, 2)).plus(chromosomes);
+        ListF<float[]> doubled = Cf.arrayList(copies.take(Math.max(targetPloidy, 2)).plus(chromosomes));
         Collections.shuffle(doubled, r);
         int splitAt = targetPloidy;
         if (changePloidy && !downsize && r.nextFloat() < 0.2f) {
