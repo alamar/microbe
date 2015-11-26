@@ -20,7 +20,7 @@ public class Microbe {
 
     protected Microbe(float[][] inheritedChromosomes, boolean changePloidy) {
         this.changePloidy = changePloidy;
-        chromosomes = inheritedChromosomes;
+        this.chromosomes = inheritedChromosomes;
     }
 
     public Microbe(int ploidy, int numGenes, boolean changePloidy) {
@@ -101,37 +101,37 @@ public class Microbe {
     public Microbe replicate(Random r, boolean inexact, int maxChromosomes, float downsizeChance) {
         ListF<float[]> copies = Cf.arrayList();
         int targetPloidy = chromosomes.length;
-        if (downsizeChance > 0f && targetPloidy > 1 && downsizeChance > r.nextFloat()) {
+        if (!changePloidy) {
+            maxChromosomes = targetPloidy;
+        }
+
+        boolean downsize = changePloidy && downsizeChance > 0f && targetPloidy > 1 && downsizeChance > r.nextFloat();
+        boolean triplicate = inexact || (targetPloidy == 1 && changePloidy);
+
+        if (downsize) {
             targetPloidy = (targetPloidy + 1) / 2;
-        }
-        for (float[] chromosome : chromosomes) {
-            copies.add(chromosome.clone());
-            if (inexact || changePloidy) {
+        } else {
+            for (float[] chromosome : chromosomes) {
                 copies.add(chromosome.clone());
+                if (triplicate) {
+                    copies.add(chromosome.clone());
+                }
             }
-        }
-        if (inexact || changePloidy) {
-            Collections.shuffle(copies, r);
+            if (triplicate) {
+                Collections.shuffle(copies, r);
+            }
         }
         ListF<float[]> doubled = copies.take(Math.max(targetPloidy, 2)).plus(chromosomes);
         Collections.shuffle(doubled, r);
         int splitAt = targetPloidy;
-        if (changePloidy) {
-            float adjust = r.nextFloat();
-            if (splitAt > 1 && adjust < 0.1f) {
-                splitAt--;
-            }
-            if (adjust > 0.9f && splitAt < maxChromosomes) {
-                splitAt++;
-            }
+        if (changePloidy && !downsize && r.nextFloat() < 0.2f) {
+            splitAt++;
         }
 
-        chromosomes = doubled.take(splitAt).toArray(OF_CHROMOSOMES);
-        fitness = -1f;
+        this.chromosomes = doubled.take(Math.min(splitAt, maxChromosomes)).toArray(OF_CHROMOSOMES);
+        this.fitness = -1f;
 
-        float[][] siblingChromosomes = doubled.drop(splitAt)
-                .take(Math.min(Math.max(targetPloidy * 2 - splitAt, 1), changePloidy ? maxChromosomes : targetPloidy))
-                .toArray(OF_CHROMOSOMES);
+        float[][] siblingChromosomes = doubled.drop(splitAt).take(maxChromosomes).toArray(OF_CHROMOSOMES);
         return new Microbe(siblingChromosomes, changePloidy);
     }
 

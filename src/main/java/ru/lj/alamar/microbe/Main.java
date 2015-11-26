@@ -104,13 +104,15 @@ public class Main {
 
     private static final int BAR_WIDTH = 50;
     static void printPloidy(PrintWriter out, int[] ploidy, int population) throws IOException {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder bar = new StringBuilder();
+        StringBuilder table = new StringBuilder();
         for (int i = 0; i < 10; i++) {
             for (int b = 0; b < (ploidy[i] * BAR_WIDTH + population / 2) / population; b++) {
-                sb.append(i == 0 ? "M" : Integer.toString(i));
+                bar.append(i == 0 ? "M" : Integer.toString(i));
             }
+            table.append("\t").append(ploidy[i]);
         }
-        print(out, sb.toString());
+        print(out, bar.append(table).toString());
     }
 
     static void print(PrintWriter out, String line) {
