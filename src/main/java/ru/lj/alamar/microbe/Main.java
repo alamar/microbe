@@ -99,6 +99,7 @@ public class Main {
         }*/
         } finally {
             out.close();
+            System.out.println("Simulation complete for model: " + args[0]);
         }
     }
 
@@ -121,6 +122,11 @@ public class Main {
     }
 
     static PrintWriter output(String modelName, String cmdlineSeed) throws IOException {
+        File output = new File("models/" + modelName + (cmdlineSeed.isEmpty() ? "" : ("-" + cmdlineSeed)) + ".txt");
+        if (output.exists()) {
+            System.err.println("Creating back-up copy of simulation results");
+            output.renameTo(new File(output.getPath() + ".bak"));
+        }
         return new PrintWriter(new File("models/" + modelName + (cmdlineSeed.isEmpty() ? "" : ("-" + cmdlineSeed)) + ".txt"));
     }
 
