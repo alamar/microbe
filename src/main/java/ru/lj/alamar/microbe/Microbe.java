@@ -59,15 +59,16 @@ public class Microbe {
     public void mutate(Random r, float geneMutationChance, float negativeModifier, float mutationPositiveChance, float positiveModifier,
             float conversionChance, float crossingChance)
     {
-        for (float[] chromosome : chromosomes) {
+        for (int c = 0; c < chromosomes.length; c++) {
+            float[] chromosome = chromosomes[c];
             for (int g = 0; g < chromosome.length; g++) {
-                if (conversionChance > 0f && r.nextFloat() < conversionChance) {
-                    chromosome[g] = chromosomes[r.nextInt(chromosomes.length)][g];
+                if (chromosomes.length > 1 && conversionChance > 0f && r.nextFloat() < conversionChance) {
+                    chromosome[g] = otherChromosome(r, c)[g];
                 }
-                else if (crossingChance > 0f && r.nextFloat() < crossingChance) {
-                    int peer = r.nextInt(chromosomes.length);
-                    float gswp = chromosomes[peer][g];
-                    chromosomes[peer][g] = chromosome[g];
+                else if (chromosomes.length > 1 && crossingChance > 0f && r.nextFloat() < crossingChance) {
+                    float[] peerChromosome = otherChromosome(r, c);
+                    float gswp = peerChromosome[g];
+                    peerChromosome[g] = chromosome[g];
                     chromosome[g] = gswp;
                 }
                 if (r.nextFloat() > geneMutationChance) continue;
@@ -79,6 +80,14 @@ public class Microbe {
             }
         }
         fitness = -1f;
+    }
+
+    private float[] otherChromosome(Random r, int current) {
+        int index = r.nextInt(chromosomes.length - 1);
+        if (index >= current) {
+            return chromosomes[index + 1];
+        }
+        return chromosomes[index];
     }
 
     public void horizontalTransfer(Random r, Microbe donor) {

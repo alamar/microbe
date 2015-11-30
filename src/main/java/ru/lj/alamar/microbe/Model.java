@@ -50,9 +50,9 @@ public class Model {
         float crossingChance = Float.parseFloat(model.getProperty("crossing.chance"));
 
         int maxVariploidChromosomes = Integer.parseInt(model.getProperty("max.variploid.chromosomes"));
-        int horizontalTransfers = Integer.parseInt(model.getProperty("horizontal.transfers"));
-        int chromosomeSubstitutions = Integer.parseInt(model.getProperty("chromosome.substitutions"));
-        int chromosomeExchanges = Integer.parseInt(model.getProperty("chromosome.exchanges"));
+        float horizontalTransferRatio = Float.parseFloat(model.getProperty("horizontal.transfer.ratio"));
+        float chromosomeSubstitutionRatio = Float.parseFloat(model.getProperty("chromosome.substitution.ratio"));
+        float chromosomeExchangeRatio = Float.parseFloat(model.getProperty("chromosome.exchange.ratio"));
 
         boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
         boolean mitosis = "true".equalsIgnoreCase(model.getProperty("mitosis"));
@@ -62,24 +62,26 @@ public class Model {
         for (int s = 0; s < steps; s++) {
             float totalFitness = 0f;
             int[] ploidy = new int[10];
+            float totalChromosomes = 0;
             for (Microbe microbe : microbes) {
                 microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect, conversionChance, crossingChance);
                 totalFitness += microbe.fitness();
+                totalChromosomes += microbe.getChromosomes().length;
                 if (microbe.getPloidy() <= 9) {
                     ploidy[microbe.isChangePloidy() ? microbe.getPloidy() : 0]++;
                 }
             }
-            for (int t = 0; t < horizontalTransfers; t++) {
+            for (int t = 0; t < horizontalTransferRatio * totalChromosomes; t++) {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
                 recipient.horizontalTransfer(r, donor);
             }
-            for (int t = 0; t < chromosomeSubstitutions; t++) {
+            for (int t = 0; t < chromosomeSubstitutionRatio * totalChromosomes; t++) {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
                 recipient.chromosomeSubstitution(r, donor);
             }
-            for (int t = 0; t < chromosomeExchanges; t++) {
+            for (int t = 0; t < chromosomeExchangeRatio * totalChromosomes; t++) {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
                 recipient.chromosomeExchange(r, donor);
