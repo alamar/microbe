@@ -96,6 +96,14 @@ public class Microbe {
         chromosomes[targetChromosome] = donor.getChromosomes()[sourceChromosome].clone();
     }
 
+    public void chromosomeExchange(Random r, Microbe peer) {
+        int ownChromosome = r.nextInt(chromosomes.length);
+        int peerChromosome = r.nextInt(peer.getChromosomes().length);
+        float[] chromosome = chromosomes[ownChromosome];
+        chromosomes[ownChromosome] = peer.getChromosomes()[peerChromosome];
+        peer.getChromosomes()[peerChromosome] = chromosome;
+    }
+
     private static float[][] OF_CHROMOSOMES = new float[0][0];
     // XXX Mutates (not in biological sense :)
     public Microbe replicate(Random r, boolean inexact, int maxChromosomes, float downsizeChance) {

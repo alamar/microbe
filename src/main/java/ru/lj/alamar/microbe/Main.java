@@ -51,6 +51,7 @@ public class Main {
         int maxVariploidChromosomes = Integer.parseInt(model.getProperty("max.variploid.chromosomes"));
         int horizontalTransfers = Integer.parseInt(model.getProperty("horizontal.transfers"));
         int chromosomeSubstitutions = Integer.parseInt(model.getProperty("chromosome.substitutions"));
+        int chromosomeExchanges = Integer.parseInt(model.getProperty("chromosome.exchanges"));
 
         boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
         boolean mitosis = "true".equalsIgnoreCase(model.getProperty("mitosis"));
@@ -76,6 +77,11 @@ public class Main {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
                 recipient.chromosomeSubstitution(r, donor);
+            }
+            for (int t = 0; t < chromosomeExchanges; t++) {
+                Microbe donor = microbes.get(r.nextInt(microbes.size()));
+                Microbe recipient = microbes.get(r.nextInt(microbes.size()));
+                recipient.chromosomeExchange(r, donor);
             }
             float avgFitness = totalFitness / (float) microbes.size();
             microbes = Microbe.selectOffspring(r, microbes, luckRatio, maxVariploidChromosomes, inexactDuplication, downsizeChance, mitosis);
