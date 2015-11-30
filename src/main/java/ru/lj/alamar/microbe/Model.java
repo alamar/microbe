@@ -19,13 +19,28 @@ public class Model {
 
     private static final DecimalFormat FMT = new DecimalFormat("0.#####");
 
-    public static void main(String[] args) throws Exception {
+    public static int main(String[] args) throws Exception {
+        if (args.length == 0) {
+            System.err.println("Usage: model {model-name} [RNG-seed]");
+            System.err.println("See MODELS directory");
+            return 1;
+        }
+        String modelName = args[0].replace(".properties", "");
         String cmdlineSeed = (args.length >= 2 && args[1] != null && !args[1].isEmpty()) ? args[1] : "";
-        PrintWriter out = output(args[0], cmdlineSeed);
+        PrintWriter out = output(modelName, cmdlineSeed);
         try {
-        Properties model = loadModel(args[0], out);
-        print(out, "model = " + args[0]);
-        Random r = new Random(Integer.parseInt(cmdlineSeed.isEmpty() ? model.getProperty("seed") : cmdlineSeed));
+            Properties model = loadModel(modelName, out);
+            print(out, "model = " + modelName);
+            Random r = new Random(Integer.parseInt(cmdlineSeed.isEmpty() ? model.getProperty("seed") : cmdlineSeed));
+            runSimulation(r, model, out);
+        } finally {
+            out.close();
+            System.out.println("Simulation complete for model: " + modelName);
+        }
+        return 0;
+    }
+
+    static void runSimulation(Random r, Properties model, PrintWriter out) throws IOException {
         ListF<Microbe> microbes = Cf.arrayList();
         int population = Integer.parseInt(model.getProperty("population"));
         float normalFitness = Float.parseFloat(model.getProperty("normal.fitness"));
@@ -106,10 +121,6 @@ public class Model {
             }
             out.println();
         }*/
-        } finally {
-            out.close();
-            System.out.println("Simulation complete for model: " + args[0]);
-        }
     }
 
     private static final int BAR_WIDTH = 50;
