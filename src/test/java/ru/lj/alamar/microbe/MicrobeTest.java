@@ -21,7 +21,7 @@ import java.util.Set;
 public class MicrobeTest {
     @Test
     public void testNew() {
-        Microbe microbe = new Microbe(1, 10, false);
+        Microbe microbe = new Microbe(0.99f, 1, 10, false);
         assertEquals(1f, microbe.fitness(), 0.001f);
         float[][] chromosomes = microbe.getChromosomes();
         assertEquals(1, chromosomes.length);
@@ -31,7 +31,7 @@ public class MicrobeTest {
 
     @Test
     public void testMutate() {
-        Microbe microbe = new Microbe(1, 10, false);
+        Microbe microbe = new Microbe(0.99f, 1, 10, false);
         Random r = new Random(0);
         microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f, 0f, 0f);
         assertEquals(0.125f, microbe.fitness(), 0.001f);
@@ -47,7 +47,7 @@ public class MicrobeTest {
 
     @Test
     public void testPloidy() {
-        Microbe microbe = new Microbe(6, 10, false);
+        Microbe microbe = new Microbe(0.99f, 6, 10, false);
         Random r = new Random(0);
         microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f, 0f, 0f);
 

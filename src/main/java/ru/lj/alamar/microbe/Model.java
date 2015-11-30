@@ -28,14 +28,15 @@ public class Model {
         Random r = new Random(Integer.parseInt(cmdlineSeed.isEmpty() ? model.getProperty("seed") : cmdlineSeed));
         ListF<Microbe> microbes = Cf.arrayList();
         int population = Integer.parseInt(model.getProperty("population"));
+        float normalFitness = Float.parseFloat(model.getProperty("normal.fitness"));
         int chromosomes = Integer.parseInt(model.getProperty("chromosomes"));
         int genes = Integer.parseInt(model.getProperty("genes"));
         for (int i = 0; i < population; i++) {
-            microbes.add(new Microbe(chromosomes, genes, false));
+            microbes.add(new Microbe(normalFitness, chromosomes, genes, false));
         }
         int variploidPopulation = Integer.parseInt(model.getProperty("variploid.population"));
         for (int i = 0; i < variploidPopulation; i++) {
-            microbes.add(new Microbe(chromosomes, genes, true));
+            microbes.add(new Microbe(normalFitness, chromosomes, genes, true));
         }
 
         float geneMutationChance = Float.parseFloat(model.getProperty("gene.mutation.chance"));

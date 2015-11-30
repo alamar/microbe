@@ -12,23 +12,25 @@ import ru.yandex.bolts.collection.Tuple2List;
  */
 public class Microbe {
     // fitness: 0.0 to 1.0
-    public static final float NORMAL_FITNESS = 0.99f;
     public static final float ALIVE_FITNESS = 0.5f;
+    private float normalFitness;
     private float[][] chromosomes;
-    boolean changePloidy;
+    private boolean changePloidy;
     private float fitness = -1f;
 
-    protected Microbe(float[][] inheritedChromosomes, boolean changePloidy) {
+    protected Microbe(float normalFitness, float[][] inheritedChromosomes, boolean changePloidy) {
+        this.normalFitness = normalFitness;
         this.changePloidy = changePloidy;
         this.chromosomes = inheritedChromosomes;
     }
 
-    public Microbe(int ploidy, int numGenes, boolean changePloidy) {
+    public Microbe(float normalFitness, int ploidy, int numGenes, boolean changePloidy) {
+        this.normalFitness = normalFitness;
         this.changePloidy = changePloidy;
         chromosomes = new float[ploidy][numGenes];
         for (float[] chromosome : chromosomes) {
            for (int g = 0; g < numGenes; g++) {
-               chromosome[g] = NORMAL_FITNESS;
+               chromosome[g] = normalFitness;
            }
         }
     }
@@ -44,7 +46,7 @@ public class Microbe {
                     geneFitness = chromosomes[p][g];
                 }
             }
-            result *= (geneFitness / NORMAL_FITNESS);
+            result *= (geneFitness / normalFitness);
         }
         fitness = result;
         return result;
@@ -140,7 +142,7 @@ public class Microbe {
         this.fitness = -1f;
 
         float[][] siblingChromosomes = doubled.drop(splitAt).take(maxChromosomes).toArray(OF_CHROMOSOMES);
-        return new Microbe(siblingChromosomes, changePloidy);
+        return new Microbe(normalFitness, siblingChromosomes, changePloidy);
     }
 
     public Microbe mitosis() {
@@ -148,7 +150,7 @@ public class Microbe {
         for (int c = 0; c < chromosomes.length; c++) {
             siblingChromosomes[c] = chromosomes[c].clone();
         }
-        return new Microbe(siblingChromosomes, changePloidy);
+        return new Microbe(normalFitness, siblingChromosomes, changePloidy);
     }
 
     public static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio,
