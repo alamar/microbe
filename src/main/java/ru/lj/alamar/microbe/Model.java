@@ -25,6 +25,9 @@ public class Model {
             System.err.println("See MODELS directory");
             System.exit(1);
         }
+        if (args[1] == null) {
+            args = new String[] { args[0] }; /* anti-maven */
+        }
         String modelName = args[0].replace(".properties", "");
         PrintWriter out = output(modelName, args);
         try {
@@ -107,6 +110,9 @@ public class Model {
             print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness));
             if (variploidPopulation > 0) {
                 printPloidy(out, ploidy, microbes.size());
+            }
+            if (s % 10 == 0) {
+                out.flush();
             }
         }
         /*for (Microbe microbe : microbes.shuffle()) {
