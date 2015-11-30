@@ -15,7 +15,7 @@ import ru.yandex.bolts.collection.ListF;
 /**
  * @author ilyak
  */
-public class Main {
+public class Model {
 
     private static final DecimalFormat FMT = new DecimalFormat("0.#####");
 
