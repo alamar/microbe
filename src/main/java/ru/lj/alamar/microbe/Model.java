@@ -19,25 +19,23 @@ public class Model {
 
     private static final DecimalFormat FMT = new DecimalFormat("0.#####");
 
-    public static int main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         if (args.length == 0) {
-            System.err.println("Usage: model {model-name} [RNG-seed]");
+            System.err.println("Usage: model {model-name} [RNG-seed] [key=value]...");
             System.err.println("See MODELS directory");
-            return 1;
+            System.exit(1);
         }
         String modelName = args[0].replace(".properties", "");
-        String cmdlineSeed = (args.length >= 2 && args[1] != null && !args[1].isEmpty()) ? args[1] : "";
-        PrintWriter out = output(modelName, cmdlineSeed);
+        PrintWriter out = output(modelName, args);
         try {
-            Properties model = loadModel(modelName, out);
+            Properties model = loadModel(modelName, args, out);
             print(out, "model = " + modelName);
-            Random r = new Random(Integer.parseInt(cmdlineSeed.isEmpty() ? model.getProperty("seed") : cmdlineSeed));
+            Random r = new Random(Integer.parseInt(model.getProperty("seed")));
             runSimulation(r, model, out);
         } finally {
             out.close();
-            System.out.println("Simulation complete for model: " + modelName);
+            System.out.println("Simulation complete for model: " + modelName + " " + Cf.list(args).drop(1).mkString(" "));
         }
-        return 0;
     }
 
     static void runSimulation(Random r, Properties model, PrintWriter out) throws IOException {
@@ -141,16 +139,20 @@ public class Model {
         out.println(line);
     }
 
-    static PrintWriter output(String modelName, String cmdlineSeed) throws IOException {
-        File output = new File("models/" + modelName + (cmdlineSeed.isEmpty() ? "" : ("-" + cmdlineSeed)) + ".txt");
+    static PrintWriter output(String modelName, String[] args) throws IOException {
+        String trail = "";
+        for (int a = 1; a < args.length; a++) {
+            trail += "-" + args[a].replaceAll(" ", "").replaceAll("=", "-").replaceAll("\\.", "");
+        }
+        File output = new File("models/" + modelName + trail + ".txt");
         if (output.exists()) {
             System.err.println("Creating back-up copy of simulation results");
             output.renameTo(new File(output.getPath() + ".bak"));
         }
-        return new PrintWriter(new File("models/" + modelName + (cmdlineSeed.isEmpty() ? "" : ("-" + cmdlineSeed)) + ".txt"));
+        return new PrintWriter(output);
     }
 
-    static Properties loadModel(String modelName, final PrintWriter out) throws IOException {
+    static Properties loadModel(String modelName, String[] args, final PrintWriter out) throws IOException {
         Properties model = new Properties() {
             public String getProperty(String name) {
                 String value = super.getProperty(name);
@@ -164,8 +166,21 @@ public class Model {
         String baseModelName = model.getProperty("base.model");
         if (baseModelName != null) {
             // No support for nesting!
+            // XXX do we need it at all when we have command-line properties?
             loadPropertiesFile(model, baseModelName);
             loadPropertiesFile(model, modelName);
+        }
+        for (int a = 1; a < args.length; a++) {
+            String arg = args[a];
+            if (arg.matches("^[0-9]+$")) {
+                model.setProperty("seed", arg);
+                continue;
+            }
+            int eq = arg.indexOf("=");
+            if (eq <= 0) {
+                throw new RuntimeException("Cannot parse key=value: " + arg);
+            }
+            model.setProperty(arg.substring(0, eq).trim(), arg.substring(eq + 1).trim());
         }
         return model;
     }
@@ -181,6 +196,5 @@ public class Model {
                 System.err.println(e);
             }
         }
-
     }
 }
