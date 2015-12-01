@@ -69,4 +69,22 @@ public class MicrobeTest {
         assertTrue(chromosomes.isEmpty());
         assertTrue(chromosomesCopy.isEmpty());
     }
+
+    @Test
+    public void testSubstitution() {
+        Microbe donor = new Microbe(0.99f, 2, 10, false);
+        Random r = new Random(0);
+        donor.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f, 0f, 0f);
+        assertEquals(1.003f, donor.fitness(), 0.0005f);
+
+        Microbe receiver = new Microbe(0.99f, 2, 10, false);
+        receiver.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f, 0f, 0f);
+        assertEquals(1.001f, receiver.fitness(), 0.0005f);
+
+        receiver.chromosomeSubstitution(r, donor);
+        assertArrayEquals(receiver.getChromosomes()[1], donor.getChromosomes()[1], 0.0005f);
+
+        assertEquals(1.003f, donor.fitness(), 0.0005f);
+        assertNotEquals(1.001f, receiver.fitness(), 0.0005f);
+    }
 }

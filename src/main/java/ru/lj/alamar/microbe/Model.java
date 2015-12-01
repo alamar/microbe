@@ -25,7 +25,7 @@ public class Model {
             System.err.println("See MODELS directory");
             System.exit(1);
         }
-        if (args[1] == null) {
+        if (args.length > 1 && args[1] == null) {
             args = new String[] { args[0] }; /* anti-maven */
         }
         String modelName = args[0].replace(".properties", "");
@@ -76,16 +76,10 @@ public class Model {
         int steps = Integer.parseInt(model.getProperty("steps"));
         print(out, "step\tpopulation\taverage fitness");
         for (int s = 0; s < steps; s++) {
-            float totalFitness = 0f;
-            int[] ploidy = new int[10];
             float totalChromosomes = 0;
             for (Microbe microbe : microbes) {
                 microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect, conversionChance, crossingChance);
-                totalFitness += microbe.fitness();
                 totalChromosomes += microbe.getChromosomes().length;
-                if (microbe.getPloidy() <= 9) {
-                    ploidy[microbe.isChangePloidy() ? microbe.getPloidy() : 0]++;
-                }
             }
             for (int t = 0; t < horizontalTransferRatio * totalChromosomes; t++) {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
@@ -101,6 +95,14 @@ public class Model {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
                 recipient.chromosomeExchange(r, donor);
+            }
+            float totalFitness = 0f;
+            int[] ploidy = new int[10];
+            for (Microbe microbe : microbes) {
+                totalFitness += microbe.fitness();
+                if (microbe.getPloidy() <= 9) {
+                    ploidy[microbe.isChangePloidy() ? microbe.getPloidy() : 0]++;
+                }
             }
             float avgFitness = totalFitness / (float) microbes.size();
             microbes = Microbe.selectOffspring(r, microbes, luckRatio, maxVariploidChromosomes, inexactDuplication, downsizeChance, mitosis);

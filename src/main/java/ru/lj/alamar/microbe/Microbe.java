@@ -16,6 +16,7 @@ public class Microbe {
     private float normalFitness;
     private float[][] chromosomes;
     private boolean changePloidy;
+    // cached; trouble source
     private float fitness = -1f;
 
     protected Microbe(float normalFitness, float[][] inheritedChromosomes, boolean changePloidy) {
@@ -99,12 +100,14 @@ public class Microbe {
         for (int g = startingGene; g < startingGene + fragmentLength; g++) {
             chromosomes[targetChromosome][g % genes] = donor.getChromosomes()[sourceChromosome][g % genes];
         }
+        this.fitness = -1f;
     }
 
     public void chromosomeSubstitution(Random r, Microbe donor) {
         int targetChromosome = r.nextInt(chromosomes.length);
         int sourceChromosome = r.nextInt(donor.getChromosomes().length);
         chromosomes[targetChromosome] = donor.getChromosomes()[sourceChromosome].clone();
+        this.fitness = -1f;
     }
 
     public void chromosomeExchange(Random r, Microbe peer) {
@@ -113,6 +116,8 @@ public class Microbe {
         float[] chromosome = chromosomes[ownChromosome];
         chromosomes[ownChromosome] = peer.getChromosomes()[peerChromosome];
         peer.getChromosomes()[peerChromosome] = chromosome;
+        peer.fitness = -1f;
+        this.fitness = -1f;
     }
 
     private static float[][] OF_CHROMOSOMES = new float[0][0];
@@ -180,8 +185,8 @@ public class Microbe {
         for (Microbe microbe : population) {
             if (microbe.isDead()) continue;
             float fitness = microbe.fitness();
-            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
-            withFitnessAndLuck.add(fitness * (1f - luckRatio) + r.nextFloat() * luckRatio,
+            withFitnessAndLuck.add(((fitness - minFitness) / (maxFitness - minFitness)) * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
+            withFitnessAndLuck.add(((fitness - minFitness) / (maxFitness - minFitness)) * (1f - luckRatio) + r.nextFloat() * luckRatio,
                     mitosis ? microbe.mitosis() : microbe.replicate(r, inexactDuplication, maxChromosomes, downsizeChance));
         }
         return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
