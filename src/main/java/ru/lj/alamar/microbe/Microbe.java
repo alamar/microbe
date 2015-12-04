@@ -159,6 +159,7 @@ public class Microbe {
         return new Microbe(normalFitness, siblingChromosomes, changePloidy);
     }
 
+    // XXX Doesn't change the order of chromosomes, which makes conversion biased.
     public Microbe mitosis() {
         float[][] siblingChromosomes = new float[chromosomes.length][];
         for (int c = 0; c < chromosomes.length; c++) {
@@ -184,10 +185,9 @@ public class Microbe {
         }
         for (Microbe microbe : population) {
             if (microbe.isDead()) continue;
-            float fitness = microbe.fitness();
-            withFitnessAndLuck.add(((fitness - minFitness) / (maxFitness - minFitness)) * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
-            withFitnessAndLuck.add(((fitness - minFitness) / (maxFitness - minFitness)) * (1f - luckRatio) + r.nextFloat() * luckRatio,
-                    mitosis ? microbe.mitosis() : microbe.replicate(r, inexactDuplication, maxChromosomes, downsizeChance));
+            Microbe sibling = mitosis ? microbe.mitosis() : microbe.replicate(r, inexactDuplication, maxChromosomes, downsizeChance);
+            withFitnessAndLuck.add(((microbe.fitness() - minFitness) / (maxFitness - minFitness)) * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
+            withFitnessAndLuck.add(((sibling.fitness() - minFitness) / (maxFitness - minFitness)) * (1f - luckRatio) + r.nextFloat() * luckRatio, sibling);
         }
         return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
     }
