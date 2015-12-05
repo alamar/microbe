@@ -8,6 +8,16 @@ import java.text.DecimalFormat;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Arrays;
+import java.awt.BasicStroke;
+
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.axis.NumberAxis;
 
 import ru.yandex.bolts.collection.Cf;
 import ru.yandex.bolts.collection.ListF;
@@ -34,14 +44,14 @@ public class Model {
             Properties model = loadModel(modelName, args, out);
             print(out, "model = " + modelName);
             Random r = new Random(Integer.parseInt(model.getProperty("seed")));
-            runSimulation(r, model, out);
+            drawChart(modelName, runSimulation(r, model, out));
         } finally {
             out.close();
             System.out.println("Simulation complete for model: " + modelName + " " + Cf.list(args).drop(1).mkString(" "));
         }
     }
 
-    static void runSimulation(Random r, Properties model, PrintWriter out) throws IOException {
+    static ListF<Float> runSimulation(Random r, Properties model, PrintWriter out) throws IOException {
         ListF<Microbe> microbes = Cf.arrayList();
         int population = Integer.parseInt(model.getProperty("population"));
         float normalFitness = Float.parseFloat(model.getProperty("normal.fitness"));
@@ -75,6 +85,7 @@ public class Model {
 
         int steps = Integer.parseInt(model.getProperty("steps"));
         print(out, "step\tpopulation\taverage fitness");
+        ListF<Float> dataset = Cf.arrayList();
         for (int s = 0; s < steps; s++) {
             float totalChromosomes = 0;
             for (Microbe microbe : microbes) {
@@ -113,10 +124,12 @@ public class Model {
             if (variploidPopulation > 0) {
                 printPloidy(out, ploidy, microbes.size());
             }
+            dataset.add(avgFitness);
             if (s % 10 == 0) {
                 out.flush();
             }
         }
+        return dataset;
         /*for (Microbe microbe : microbes.shuffle()) {
             for (float[] chromosome : microbe.getChromosomes()) {
                 for (float gene : chromosome) {
@@ -158,6 +171,24 @@ public class Model {
             output.renameTo(new File(output.getPath() + ".bak"));
         }
         return new PrintWriter(output);
+    }
+
+    static void drawChart(String model, ListF<Float> dataset) throws IOException {
+        XYSeries series = new XYSeries(1);
+        for (int i = 0; i < dataset.size(); i++) {
+            series.add(i, dataset.get(i));
+        }
+        XYDataset data = new XYSeriesCollection(series);
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        renderer.setShapesVisible(false);
+        renderer.setSeriesStroke(0, new BasicStroke(2.0f));
+        JFreeChart chart = new JFreeChart(new XYPlot(data, new NumberAxis(), new NumberAxis(), renderer));
+        File output = new File("models/" + model + ".png");
+        if (output.exists()) {
+            System.err.println("Creating back-up copy of simulation chart");
+            output.renameTo(new File(output.getPath() + ".bak"));
+        }
+        ChartUtilities.saveChartAsPNG(output, chart, 800, 600);
     }
 
     static Properties loadModel(String modelName, String[] args, final PrintWriter out) throws IOException {
