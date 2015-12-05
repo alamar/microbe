@@ -186,8 +186,12 @@ public class Microbe {
         for (Microbe microbe : population) {
             if (microbe.isDead()) continue;
             Microbe sibling = mitosis ? microbe.mitosis() : microbe.replicate(r, inexactDuplication, maxChromosomes, downsizeChance);
-            withFitnessAndLuck.add(((microbe.fitness() - minFitness) / (maxFitness - minFitness)) * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
-            withFitnessAndLuck.add(((sibling.fitness() - minFitness) / (maxFitness - minFitness)) * (1f - luckRatio) + r.nextFloat() * luckRatio, sibling);
+            if (!microbe.isDead()) {
+                withFitnessAndLuck.add(((microbe.fitness() - minFitness) / (maxFitness - minFitness)) * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
+            }
+            if (!sibling.isDead()) {
+                withFitnessAndLuck.add(((sibling.fitness() - minFitness) / (maxFitness - minFitness)) * (1f - luckRatio) + r.nextFloat() * luckRatio, sibling);
+            }
         }
         return withFitnessAndLuck.sortBy1().reverse().get2().take(population.size());
     }
