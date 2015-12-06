@@ -38,16 +38,18 @@ public class Model {
         if (args.length > 1 && args[1] == null) {
             args = new String[] { args[0] }; /* anti-maven */
         }
-        String modelName = args[0].replace(".properties", "");
-        PrintWriter out = output(modelName, args);
+        args[0] = args[0].replace(".properties", "");
+        String modelFullName = modelWithParameters(args);
+        PrintWriter out = output(modelFullName);
+        String title = args[0] + " " + Cf.list(args).drop(1).mkString(" ");
         try {
-            Properties model = loadModel(modelName, args, out);
-            print(out, "model = " + modelName);
+            Properties model = loadModel(args, out);
+            print(out, "model = " + args[0]);
             Random r = new Random(Integer.parseInt(model.getProperty("seed")));
-            drawChart(modelName, runSimulation(r, model, out));
+            drawChart(modelFullName, title, runSimulation(r, model, out));
         } finally {
             out.close();
-            System.out.println("Simulation complete for model: " + modelName + " " + Cf.list(args).drop(1).mkString(" "));
+            System.out.println("Simulation complete for model: " + title);
         }
     }
 
@@ -160,12 +162,8 @@ public class Model {
         out.println(line);
     }
 
-    static PrintWriter output(String modelName, String[] args) throws IOException {
-        String trail = "";
-        for (int a = 1; a < args.length; a++) {
-            trail += "-" + args[a].replaceAll(" ", "").replaceAll("=", "-").replaceAll("\\.", "");
-        }
-        File output = new File("models/" + modelName + trail + ".txt");
+    static PrintWriter output(String modelName) throws IOException {
+        File output = new File("models/" + modelName + ".txt");
         if (output.exists()) {
             System.err.println("Creating back-up copy of simulation results");
             output.renameTo(new File(output.getPath() + ".bak"));
@@ -173,8 +171,8 @@ public class Model {
         return new PrintWriter(output);
     }
 
-    static void drawChart(String model, ListF<Float> dataset) throws IOException {
-        XYSeries series = new XYSeries(1);
+    static void drawChart(String model, String title, ListF<Float> dataset) throws IOException {
+        XYSeries series = new XYSeries(title);
         for (int i = 0; i < dataset.size(); i++) {
             series.add(i, dataset.get(i));
         }
@@ -191,7 +189,15 @@ public class Model {
         ChartUtilities.saveChartAsPNG(output, chart, 800, 600);
     }
 
-    static Properties loadModel(String modelName, String[] args, final PrintWriter out) throws IOException {
+    static String modelWithParameters(String[] args) {
+        String modelName = args[0];
+        for (int a = 1; a < args.length; a++) {
+            modelName += "-" + args[a].replaceAll(" ", "").replaceAll("=", "-").replaceAll("\\.", "");
+        }
+        return modelName;
+    }
+
+    static Properties loadModel(String[] args, final PrintWriter out) throws IOException {
         Properties model = new Properties() {
             public String getProperty(String name) {
                 String value = super.getProperty(name);
@@ -201,13 +207,13 @@ public class Model {
         };
 
         loadPropertiesFile(model, "default");
-        loadPropertiesFile(model, modelName);
+        loadPropertiesFile(model, args[0]);
         String baseModelName = model.getProperty("base.model");
         if (baseModelName != null) {
             // No support for nesting!
             // XXX do we need it at all when we have command-line properties?
             loadPropertiesFile(model, baseModelName);
-            loadPropertiesFile(model, modelName);
+            loadPropertiesFile(model, args[0]);
         }
         for (int a = 1; a < args.length; a++) {
             String arg = args[a];
