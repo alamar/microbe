@@ -27,28 +27,41 @@
       <systemPath>${project.basedir}/lib/ru.yandex-bolts-jar-20121016122946.jar</systemPath>
     </dependency>
   </dependencies>
-<build>
-  <plugins>
-    <plugin>
-      <groupId>org.codehaus.mojo</groupId>
-      <artifactId>exec-maven-plugin</artifactId>
-      <version>1.2.1</version>
-      <executions>
-        <execution>
-          <goals>
-            <goal>java</goal>
-          </goals>
-        </execution>
-      </executions>
-      <configuration>
-        <mainClass>ru.lj.alamar.microbe.Model</mainClass>
-        <classpathScope>compile</classpathScope>
-        <arguments>
-          <argument>${model}</argument>
-          <argument>${seed}</argument>
-        </arguments>
-      </configuration>
-    </plugin>
-  </plugins>
-</build>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <mainClass>ru.lj.alamar.microbe.Model</mainClass>
+          <classpathScope>compile</classpathScope>
+          <arguments>
+            <argument>${model}</argument>
+            <argument>${seed}</argument>
+          </arguments>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
