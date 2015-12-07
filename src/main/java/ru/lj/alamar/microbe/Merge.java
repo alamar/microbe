@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 
 import ru.yandex.bolts.collection.Cf;
@@ -53,11 +54,40 @@ public class Merge {
             }
             dataset.add(model, values);
         }
+
         Chart.drawChart(args[args.length - 1], dataset, false);
+
+        int written;
+        int i = 0;
+        PrintWriter out = output(args[args.length - 1]);
+        do {
+            written = 0;
+            StringBuilder line = new StringBuilder();
+            for (ListF<Float> values : dataset.get2()) {
+                if (values.size() > i) {
+                    line.append(FMT.format(values.get(i)));
+                    written++;
+                }
+                line.append('\t');
+            }
+            out.println(line.toString());
+            i++;
+        } while (written > 0);
+        out.close();
     }
 
     static BufferedReader openResults(String modelName) throws IOException {
         File input = new File("models/" + modelName + ".txt");
         return new BufferedReader(new FileReader(input));
+    }
+
+    static PrintWriter output(String modelName) throws IOException {
+        File output = new File("models/" + modelName + ".txt");
+        if (output.exists()) {
+            System.err.println("Creating back-up copy of merge results");
+            output.renameTo(new File(output.getPath() + ".bak"));
+        }
+        System.err.println("Writing simulations merge to: " + output.getPath());
+        return new PrintWriter(output);
     }
 }
