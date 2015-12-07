@@ -36,14 +36,16 @@ public class Model {
             Properties model = loadModel(args, out);
             print(out, "model = " + args[0]);
             Random r = new Random(Integer.parseInt(model.getProperty("seed")));
-            Chart.drawChart(modelFullName, title, runSimulation(r, model, out), true);
+            int steps = Integer.parseInt(model.getProperty("steps"));
+            ListF<Float> avgFitness = runSimulation(r, model, steps, out);
+            Chart.drawChart(modelFullName, title, avgFitness, avgFitness.size() < steps);
         } finally {
             out.close();
             System.out.println("Simulation complete for model: " + title);
         }
     }
 
-    static ListF<Float> runSimulation(Random r, Properties model, PrintWriter out) throws IOException {
+    static ListF<Float> runSimulation(Random r, Properties model, int steps, PrintWriter out) throws IOException {
         ListF<Microbe> microbes = Cf.arrayList();
         int population = Integer.parseInt(model.getProperty("population"));
         float normalFitness = Float.parseFloat(model.getProperty("normal.fitness"));
@@ -75,7 +77,6 @@ public class Model {
         boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
         boolean mitosis = "true".equalsIgnoreCase(model.getProperty("mitosis"));
 
-        int steps = Integer.parseInt(model.getProperty("steps"));
         print(out, "step\tpopulation\taverage fitness");
         ListF<Float> dataset = Cf.arrayList();
         for (int s = 0; s < steps; s++) {
@@ -116,7 +117,9 @@ public class Model {
             if (variploidPopulation > 0) {
                 printPloidy(out, ploidy, microbes.size());
             }
-            dataset.add(avgFitness);
+            if (microbes.size() == (population + variploidPopulation)) {
+                dataset.add(avgFitness);
+            }
             if (s % 10 == 0) {
                 out.flush();
             }
