@@ -42,23 +42,30 @@ public class Chart {
         XYPlot plot = (XYPlot) chart.getPlot();
         plot.getRenderer().setSeriesStroke(0, new BasicStroke(3.5f));
 
+        BasicStroke gridlineStroke = (BasicStroke) plot.getDomainGridlineStroke();
+        gridlineStroke = new BasicStroke(2.0f, gridlineStroke.getEndCap(), gridlineStroke.getLineJoin(), gridlineStroke.getMiterLimit(),
+                gridlineStroke.getDashArray(), gridlineStroke.getDashPhase());
         plot.getDomainAxis().setLabelFont(plot.getDomainAxis().getLabelFont().deriveFont(25f));
         plot.getDomainAxis().setTickLabelFont(plot.getDomainAxis().getTickLabelFont().deriveFont(20f));
+        plot.setDomainGridlineStroke(gridlineStroke);
         if (!padRight) {
             plot.getDomainAxis().setUpperMargin(0);
         }
-        plot.getRangeAxis().setLabelFont(plot.getRangeAxis().getLabelFont().deriveFont(25f));
-        plot.getRangeAxis().setTickLabelFont(plot.getRangeAxis().getTickLabelFont().deriveFont(20f));
+        plot.getRangeAxis().setLabelFont(plot.getRangeAxis().getLabelFont().deriveFont(27f));
+        plot.getRangeAxis().setTickLabelFont(plot.getRangeAxis().getTickLabelFont().deriveFont(22f));
         plot.getRangeAxis().setUpperBound(max);
         plot.getRangeAxis().setLowerBound(min);
+        plot.setRangeGridlineStroke(gridlineStroke);
         if (max > 1.0f) {
             ValueMarker fit = new ValueMarker(1.0f);
             fit.setPaint(Color.black);
+            fit.setStroke(new BasicStroke(2.0f));
             plot.addRangeMarker(fit);
         }
         if (min < 0.5f) {
             ValueMarker degenerate = new ValueMarker(0.5f);
             degenerate.setPaint(Color.black);
+            degenerate.setStroke(new BasicStroke(2.0f));
             plot.addRangeMarker(degenerate);
         }
 
