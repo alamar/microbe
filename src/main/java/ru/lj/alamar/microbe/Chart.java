@@ -1,22 +1,23 @@
 package ru.lj.alamar.microbe;
 
-import java.io.File;
-import java.io.IOException;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYTitleAnnotation;
-import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.plot.ValueMarker;
-import org.jfree.data.xy.XYDataset;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleAnchor;
 
 import ru.yandex.bolts.collection.ListF;
+import ru.yandex.bolts.collection.Tuple2;
+import ru.yandex.bolts.collection.Tuple2List;
 
 /**
  * @author ilyak
@@ -24,23 +25,32 @@ import ru.yandex.bolts.collection.ListF;
 public class Chart {
 
     public static void drawChart(String model, String title, ListF<Float> dataset, boolean padRight) throws IOException {
-        XYSeries series = new XYSeries(title);
+        drawChart(model, Tuple2List.fromPairs(title, dataset), padRight);
+    }
+
+    public static void drawChart(String model, Tuple2List<String, ListF<Float>> dataset, boolean padRight) throws IOException {
+        XYSeriesCollection data = new XYSeriesCollection();
         float min = 1f;
         float max = 1f;
-        for (int i = 0; i < dataset.size(); i++) {
-            float value = dataset.get(i);
-            series.add(i, value);
-            if (min > value) min = value;
-            // When value == 1f we want higher bound
-            if (max < value) max = value;
+        for (Tuple2<String, ListF<Float>> run : dataset) {
+            XYSeries series = new XYSeries(run.get1());
+            ListF<Float> values = run.get2();
+            for (int i = 0; i < values.size(); i++) {
+                float value = values.get(i);
+                series.add(i, value);
+                if (min > value) min = value;
+                if (max < value) max = value;
+            }
+            data.addSeries(series);
         }
         min = ((float) Math.floor(min * 20.0f) - 1.0f) / 20.0f;
         max = ((float) Math.ceil(max * 20.0f) + 1.0f) / 20.0f;
 
-        XYDataset data = new XYSeriesCollection(series);
         JFreeChart chart = ChartFactory.createXYLineChart("", "generation #", "average fitness", data);
         XYPlot plot = (XYPlot) chart.getPlot();
-        plot.getRenderer().setSeriesStroke(0, new BasicStroke(3.5f));
+        for (int i = 0; i < dataset.size(); i++) {
+            plot.getRenderer().setSeriesStroke(i, new BasicStroke(3.5f));
+        }
 
         BasicStroke gridlineStroke = (BasicStroke) plot.getDomainGridlineStroke();
         gridlineStroke = new BasicStroke(2.0f, gridlineStroke.getEndCap(), gridlineStroke.getLineJoin(), gridlineStroke.getMiterLimit(),
@@ -78,5 +88,6 @@ public class Chart {
             output.renameTo(new File(output.getPath() + ".bak"));
         }
         ChartUtilities.saveChartAsPNG(output, chart, 1200, 900);
+        System.err.println("Wrote chart: " + output.getPath());
     }
 }

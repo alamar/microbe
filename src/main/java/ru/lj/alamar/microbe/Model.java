@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.Properties;
 import java.util.Random;
-import java.util.Arrays;
 
 import ru.yandex.bolts.collection.Cf;
 import ru.yandex.bolts.collection.ListF;
@@ -34,7 +33,7 @@ public class Model {
         String title = args[0] + " " + Cf.list(args).drop(1).mkString(" ");
         try {
             Properties model = loadModel(args, out);
-            print(out, "model = " + args[0]);
+            print(out, "model = " + modelFullName);
             Random r = new Random(Integer.parseInt(model.getProperty("seed")));
             int steps = Integer.parseInt(model.getProperty("steps"));
             ListF<Float> avgFitness = runSimulation(r, model, steps, out);
