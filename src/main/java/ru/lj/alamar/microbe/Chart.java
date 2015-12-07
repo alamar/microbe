@@ -24,6 +24,19 @@ import ru.yandex.bolts.collection.Tuple2List;
  */
 public class Chart {
 
+    private static Color[][] colorSets = new Color[][] {
+        // "brights"
+        { new Color(0x96, 0x4B, 0x00), new Color(0xFF, 0x95, 0x0E), new Color(0x4B, 0x1F, 0x6F), new Color(0xFF, 0x33, 0x99) },
+        // reds
+        { new Color(0xE1, 0x33, 0x0C), new Color(0xE1, 0x7E, 0x54), new Color(0xC5, 0x00, 0x0B), new Color(0x86, 0x0F, 0x07) },
+        // yellows
+        { new Color(0xE1, 0xB7, 0x0C), new Color(0xE1, 0xD8, 0x54), new Color(0xC5, 0xB8, 0x00), new Color(0x86, 0x7E, 0x07) },
+        // greens
+        { new Color(0x70, 0xE1, 0x0C), new Color(0xC2, 0xFF, 0x5F), new Color(0x45, 0xC5, 0x00), new Color(0x33, 0x86, 0x07) },
+        // blues
+        { new Color(0x0C, 0x93, 0xE1), new Color(0x54, 0xB0, 0xE1), new Color(0x00, 0x66, 0xC5), new Color(0x07, 0x46, 0x86) }
+    };
+
     public static void drawChart(String model, String title, ListF<Float> dataset, boolean padRight) throws IOException {
         drawChart(model, Tuple2List.fromPairs(title, dataset), padRight);
     }
@@ -49,15 +62,18 @@ public class Chart {
         JFreeChart chart = ChartFactory.createXYLineChart("", "generation #", "average fitness", data);
         XYPlot plot = (XYPlot) chart.getPlot();
         for (int i = 0; i < dataset.size(); i++) {
+            plot.getRenderer().setSeriesPaint(i, colorSets[i % 5][(i / 4) % 4]);
             plot.getRenderer().setSeriesStroke(i, new BasicStroke(3.5f));
         }
 
+        plot.setBackgroundPaint(new Color(0xF8, 0xF8, 0xF8));
         BasicStroke gridlineStroke = (BasicStroke) plot.getDomainGridlineStroke();
         gridlineStroke = new BasicStroke(2.0f, gridlineStroke.getEndCap(), gridlineStroke.getLineJoin(), gridlineStroke.getMiterLimit(),
                 gridlineStroke.getDashArray(), gridlineStroke.getDashPhase());
+        plot.setDomainGridlineStroke(gridlineStroke);
+        plot.setDomainGridlinePaint(new Color(0xC0, 0xC0, 0xC0));
         plot.getDomainAxis().setLabelFont(plot.getDomainAxis().getLabelFont().deriveFont(25f));
         plot.getDomainAxis().setTickLabelFont(plot.getDomainAxis().getTickLabelFont().deriveFont(20f));
-        plot.setDomainGridlineStroke(gridlineStroke);
         if (!padRight) {
             plot.getDomainAxis().setUpperMargin(0);
         }
@@ -66,6 +82,7 @@ public class Chart {
         plot.getRangeAxis().setUpperBound(max);
         plot.getRangeAxis().setLowerBound(min);
         plot.setRangeGridlineStroke(gridlineStroke);
+        plot.setRangeGridlinePaint(new Color(0xC0, 0xC0, 0xC0));
         if (max > 1.0f) {
             ValueMarker fit = new ValueMarker(1.0f);
             fit.setPaint(Color.black);
