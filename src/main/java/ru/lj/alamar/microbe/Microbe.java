@@ -57,21 +57,10 @@ public class Microbe {
         return fitness() < ALIVE_FITNESS;
     }
 
-    public void mutate(Random r, float geneMutationChance, float negativeModifier, float mutationPositiveChance, float positiveModifier,
-            float conversionChance, float crossingChance)
-    {
+    public void mutate(Random r, float geneMutationChance, float negativeModifier, float mutationPositiveChance, float positiveModifier) {
         for (int c = 0; c < chromosomes.length; c++) {
             float[] chromosome = chromosomes[c];
             for (int g = 0; g < chromosome.length; g++) {
-                if (chromosomes.length > 1 && conversionChance > 0f && r.nextFloat() < conversionChance) {
-                    chromosome[g] = otherChromosome(r, c)[g];
-                }
-                else if (chromosomes.length > 1 && crossingChance > 0f && r.nextFloat() < crossingChance) {
-                    float[] peerChromosome = otherChromosome(r, c);
-                    float gswp = peerChromosome[g];
-                    peerChromosome[g] = chromosome[g];
-                    chromosome[g] = gswp;
-                }
                 if (r.nextFloat() > geneMutationChance) continue;
                 if (r.nextFloat() < mutationPositiveChance) {
                     chromosome[g] = Math.min(1f, 1f - (1f - chromosome[g]) * (1f - positiveModifier));
@@ -89,6 +78,33 @@ public class Microbe {
             return chromosomes[index + 1];
         }
         return chromosomes[index];
+    }
+
+    // XXX Following 3 methods too similar!
+    public void conversion(Random r) {
+        int genes = chromosomes[0].length;
+        int startingGene = r.nextInt(genes);
+        int fragmentLength = 1 + genes / 20 + r.nextInt(genes / 10 + 1);
+        int targetChromosomeNo = r.nextInt(chromosomes.length);
+        float[] sourceChromosome = otherChromosome(r, targetChromosomeNo);
+        for (int g = startingGene; g < startingGene + fragmentLength; g++) {
+            chromosomes[targetChromosomeNo][g % genes] = sourceChromosome[g % genes];
+        }
+        this.fitness = -1f;
+    }
+
+    public void crossing(Random r) {
+        int genes = chromosomes[0].length;
+        int startingGene = r.nextInt(genes);
+        int fragmentLength = 1 + genes / 20 + r.nextInt(genes / 10 + 1);
+        int oneChromosomeNo = r.nextInt(chromosomes.length);
+        float[] twoChromosome = otherChromosome(r, oneChromosomeNo);
+        for (int g = startingGene; g < startingGene + fragmentLength; g++) {
+            float gswp = chromosomes[oneChromosomeNo][g % genes];
+            chromosomes[oneChromosomeNo][g % genes] = twoChromosome[g % genes];
+            twoChromosome[g % genes] = gswp;
+        }
+        this.fitness = -1f;
     }
 
     public void horizontalTransfer(Random r, Microbe donor) {

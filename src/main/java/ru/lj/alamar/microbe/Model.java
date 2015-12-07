@@ -33,8 +33,8 @@ public class Model {
         String title = args[0] + " " + Cf.list(args).drop(1).mkString(" ");
         try {
             Properties model = loadModel(args, out);
-            print(out, "model = " + modelFullName);
-            Random r = new Random(Integer.parseInt(model.getProperty("seed")));
+            print(out, "model = " + title);
+            Random r = new XorShiftRandom(Long.parseLong(model.getProperty("seed")));
             int steps = Integer.parseInt(model.getProperty("steps"));
             ListF<Float> avgFitness = runSimulation(r, model, steps, out);
             Chart.drawChart(modelFullName, title, avgFitness, avgFitness.size() < steps);
@@ -64,11 +64,12 @@ public class Model {
         float positiveEffect = Float.parseFloat(model.getProperty("positive.effect"));
         float luckRatio = Float.parseFloat(model.getProperty("luck.ratio"));
 
-        float downsizeChance = Float.parseFloat(model.getProperty("downsize.chance"));
-        float conversionChance = Float.parseFloat(model.getProperty("conversion.chance"));
-        float crossingChance = Float.parseFloat(model.getProperty("crossing.chance"));
+        float conversionRatio = Float.parseFloat(model.getProperty("conversion.ratio"));
+        float crossingRatio = Float.parseFloat(model.getProperty("crossing.ratio"));
 
         int maxVariploidChromosomes = Integer.parseInt(model.getProperty("max.variploid.chromosomes"));
+        float downsizeChance = Float.parseFloat(model.getProperty("downsize.chance"));
+
         float horizontalTransferRatio = Float.parseFloat(model.getProperty("horizontal.transfer.ratio"));
         float chromosomeSubstitutionRatio = Float.parseFloat(model.getProperty("chromosome.substitution.ratio"));
         float chromosomeExchangeRatio = Float.parseFloat(model.getProperty("chromosome.exchange.ratio"));
@@ -81,8 +82,16 @@ public class Model {
         for (int s = 0; s < steps; s++) {
             float totalChromosomes = 0;
             for (Microbe microbe : microbes) {
-                microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect, conversionChance, crossingChance);
+                microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect);
                 totalChromosomes += microbe.getChromosomes().length;
+            }
+            for (int t = 0; t < conversionRatio * totalChromosomes; t++) {
+                Microbe target = microbes.get(r.nextInt(microbes.size()));
+                target.conversion(r);
+            }
+            for (int t = 0; t < crossingRatio * totalChromosomes; t++) {
+                Microbe target = microbes.get(r.nextInt(microbes.size()));
+                target.crossing(r);
             }
             for (int t = 0; t < horizontalTransferRatio * totalChromosomes; t++) {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
@@ -160,6 +169,7 @@ public class Model {
             System.err.println("Creating back-up copy of simulation results");
             output.renameTo(new File(output.getPath() + ".bak"));
         }
+        System.err.println("Writing simulation results to: " + output.getPath());
         return new PrintWriter(output);
     }
 
