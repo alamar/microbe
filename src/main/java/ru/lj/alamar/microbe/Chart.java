@@ -14,7 +14,9 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.RectangleInsets;
 
+import ru.yandex.bolts.collection.Cf;
 import ru.yandex.bolts.collection.ListF;
 import ru.yandex.bolts.collection.Tuple2;
 import ru.yandex.bolts.collection.Tuple2List;
@@ -38,33 +40,43 @@ public class Chart {
     };
 
     public static void drawChart(String model, String title, ListF<Float> dataset, boolean padRight) throws IOException {
-        drawChart(model, Tuple2List.fromPairs(title, dataset), padRight);
+        drawChart(model, Cf.<Tuple2List<String, ListF<Float>>>list(Tuple2List.fromPairs(title, dataset)), padRight);
     }
 
-    public static void drawChart(String model, Tuple2List<String, ListF<Float>> dataset, boolean padRight) throws IOException {
+    public static void drawChart(String model, ListF<Tuple2List<String, ListF<Float>>> dataset, boolean padRight) throws IOException {
         XYSeriesCollection data = new XYSeriesCollection();
         float min = 1f;
         float max = 1f;
-        for (Tuple2<String, ListF<Float>> run : dataset) {
-            XYSeries series = new XYSeries(run.get1());
-            ListF<Float> values = run.get2();
-            for (int i = 0; i < values.size(); i++) {
-                float value = values.get(i);
-                series.add(i, value);
-                if (min > value) min = value;
-                if (max < value) max = value;
+        for (Tuple2List<String, ListF<Float>> segment : dataset) {
+            for (Tuple2<String, ListF<Float>> run : segment) {
+                XYSeries series = new XYSeries(run.get1());
+                ListF<Float> values = run.get2();
+                for (int i = 0; i < values.size(); i++) {
+                    float value = values.get(i);
+                    series.add(i, value);
+                    if (min > value) min = value;
+                    if (max < value) max = value;
+                }
+                data.addSeries(series);
             }
-            data.addSeries(series);
         }
-        min = ((float) Math.floor(min * 20.0f) - 1.0f) / 20.0f;
-        max = ((float) Math.ceil(max * 20.0f) + 1.0f) / 20.0f;
 
         JFreeChart chart = ChartFactory.createXYLineChart("", "generation #", "average fitness", data);
+
         XYPlot plot = (XYPlot) chart.getPlot();
-        for (int i = 0; i < dataset.size(); i++) {
-            plot.getRenderer().setSeriesPaint(i, colorSets[i % 5][(i / 4) % 4]);
-            plot.getRenderer().setSeriesStroke(i, new BasicStroke(3.5f));
+        int i = 0;
+        int s = 0;
+        for (Tuple2List<String, ListF<Float>> segment : dataset) {
+            for (Tuple2<String, ListF<Float>> run : segment) {
+                plot.getRenderer().setSeriesPaint(i,
+                        s < 5 ? colorSets[s % 5][(i - s) % 4] : colorSets[i % 5][(i / 4) % 4]);
+                plot.getRenderer().setSeriesStroke(i, new BasicStroke(3.5f));
+                i++;
+            }
+            s++;
         }
+        min = ((float) Math.floor(min * 20.0f) - (i > 5 ? 2.0f : 1.0f)) / 20.0f;
+        max = ((float) Math.ceil(max * 20.0f) + 1.0f) / 20.0f;
 
         plot.setBackgroundPaint(new Color(0xF8, 0xF8, 0xF8));
         BasicStroke gridlineStroke = (BasicStroke) plot.getDomainGridlineStroke();
@@ -97,7 +109,10 @@ public class Chart {
         }
 
         chart.getLegend().setItemFont(chart.getLegend().getItemFont().deriveFont(20f));
-        plot.addAnnotation(new XYTitleAnnotation(0.01f, 0.01f, chart.getLegend(), RectangleAnchor.BOTTOM_LEFT));
+        chart.getLegend().setItemLabelPadding(new RectangleInsets(2, 2, 2, 20));
+        XYTitleAnnotation legend = new XYTitleAnnotation(0.01f, 0.01f, chart.getLegend(), RectangleAnchor.BOTTOM_LEFT);
+        legend.setMaxWidth(0.98f);
+        plot.addAnnotation(legend);
         chart.removeLegend();
         File output = new File("models/" + model + ".png");
         if (output.exists()) {

@@ -1,4 +1,6 @@
 target
 *.txt
+*.png
+*.bak
 *backup*
 *.xls
