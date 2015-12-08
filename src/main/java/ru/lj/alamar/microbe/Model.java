@@ -80,11 +80,14 @@ public class Model {
         print(out, "step\tpopulation\taverage fitness");
         ListF<Float> dataset = Cf.arrayList();
         for (int s = 0; s < steps; s++) {
+            float totalFitness = 0f;
             float totalChromosomes = 0;
             for (Microbe microbe : microbes) {
+                totalFitness += microbe.fitness();
                 microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect);
                 totalChromosomes += microbe.getChromosomes().length;
             }
+            float avgFitness = totalFitness / (float) microbes.size();
             for (int t = 0; t < conversionRatio * totalChromosomes; t++) {
                 Microbe target = microbes.get(r.nextInt(microbes.size()));
                 target.conversion(r);
@@ -108,15 +111,12 @@ public class Model {
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
                 recipient.chromosomeExchange(r, donor);
             }
-            float totalFitness = 0f;
             int[] ploidy = new int[10];
             for (Microbe microbe : microbes) {
-                totalFitness += microbe.fitness();
                 if (microbe.getPloidy() <= 9) {
                     ploidy[microbe.isChangePloidy() ? microbe.getPloidy() : 0]++;
                 }
             }
-            float avgFitness = totalFitness / (float) microbes.size();
             microbes = Microbe.selectOffspring(r, microbes, luckRatio, maxVariploidChromosomes, inexactDuplication, downsizeChance, mitosis);
             if (microbes.isEmpty()) {
                 break;
