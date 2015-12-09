@@ -187,6 +187,7 @@ public class Microbe {
     public static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio,
             int maxChromosomes, boolean inexactDuplication, Float downsizeChance, boolean mitosis) {
         Tuple2List<Float, Microbe> withFitnessAndLuck = Tuple2List.arrayList();
+        // Hope we don't run off so far
         float minFitness = 2f;
         float maxFitness = 0f;
         for (Microbe microbe : population) {
