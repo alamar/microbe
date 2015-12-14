@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Random;
 
@@ -16,7 +18,7 @@ import ru.yandex.bolts.collection.ListF;
  */
 public class Model {
 
-    private static final DecimalFormat FMT = new DecimalFormat("0.#####");
+    private static final DecimalFormat FMT = new DecimalFormat("0.#####", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
     public static void main(String[] args) throws Exception {
         if (args.length == 0) {
@@ -132,7 +134,6 @@ public class Model {
                 out.flush();
             }
         }
-        return dataset;
         /*for (Microbe microbe : microbes.shuffle()) {
             for (float[] chromosome : microbe.getChromosomes()) {
                 for (float gene : chromosome) {
@@ -143,6 +144,7 @@ public class Model {
             }
             out.println();
         }*/
+        return dataset;
     }
 
     private static final int BAR_WIDTH = 50;

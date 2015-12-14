@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 import ru.yandex.bolts.collection.Cf;
 import ru.yandex.bolts.collection.ListF;
@@ -16,7 +18,7 @@ import ru.yandex.bolts.collection.Tuple2List;
  */
 public class Merge {
 
-    private static final DecimalFormat FMT = new DecimalFormat("0.#####");
+    private static final DecimalFormat FMT = new DecimalFormat("0.#####", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
     public static void main(String[] argsArray) throws Exception {
         ListF<String> args = Cf.list(argsArray);
