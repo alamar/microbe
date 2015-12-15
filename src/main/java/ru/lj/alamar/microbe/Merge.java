@@ -97,12 +97,12 @@ public class Merge {
     }
 
     static BufferedReader openResults(String modelName) throws IOException {
-        File input = new File("models/" + modelName + ".txt");
+        File input = new File("models/" + modelName + ".csv");
         return new BufferedReader(new FileReader(input));
     }
 
     static PrintWriter output(String modelName) throws IOException {
-        File output = new File("models/" + modelName + ".txt");
+        File output = new File("models/" + modelName + ".csv");
         if (output.exists()) {
             System.err.println("Creating back-up copy of merge results");
             output.renameTo(new File(output.getPath() + ".bak"));

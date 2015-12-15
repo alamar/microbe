@@ -166,7 +166,7 @@ public class Model {
     }
 
     static PrintWriter output(String modelName) throws IOException {
-        File output = new File("models/" + modelName + ".txt");
+        File output = new File("models/" + modelName + ".csv");
         if (output.exists()) {
             System.err.println("Creating back-up copy of simulation results");
             output.renameTo(new File(output.getPath() + ".bak"));
