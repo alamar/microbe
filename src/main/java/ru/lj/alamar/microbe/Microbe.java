@@ -57,15 +57,28 @@ public class Microbe {
         return fitness() < ALIVE_FITNESS;
     }
 
-    public void mutate(Random r, float geneMutationChance, float negativeModifier, float mutationPositiveChance, float positiveModifier) {
+    public static float modifier(Random r, float modifier, float deviation) {
+        if (deviation == 0f) {
+            return 1f - modifier;
+        }
+        float multiplier = deviation * (float) r.nextGaussian();
+        if (multiplier < 0) {
+            return 1f - (modifier / (1 - multiplier));
+        }
+        return 1f - (modifier * (1 + multiplier));
+    }
+
+    public void mutate(Random r, float geneMutationChance, float negativeModifier, float negativeDeviation,
+            float mutationPositiveChance, float positiveModifier, float positiveDeviation)
+    {
         for (int c = 0; c < chromosomes.length; c++) {
             float[] chromosome = chromosomes[c];
             for (int g = 0; g < chromosome.length; g++) {
                 if (r.nextFloat() > geneMutationChance) continue;
                 if (r.nextFloat() < mutationPositiveChance) {
-                    chromosome[g] = Math.min(1f, 1f - (1f - chromosome[g]) * (1f - positiveModifier));
+                    chromosome[g] = Math.min(1f, 1f - (1f - chromosome[g]) * modifier(r, positiveModifier, positiveDeviation));
                 } else {
-                    chromosome[g] = Math.max(0f, chromosome[g] * (1f - negativeModifier));
+                    chromosome[g] = Math.max(0f, chromosome[g] * modifier(r, negativeModifier, negativeDeviation));
                 }
             }
         }

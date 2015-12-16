@@ -43,14 +43,14 @@ public class MicrobeTest {
     public void testMutate() {
         Microbe microbe = new Microbe(0.99f, 1, 10, false);
         Random r = new Random(0);
-        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
-        assertEquals(0.125f, microbe.fitness(), 0.001f);
-        assertArrayEquals(new float[] {0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, microbe.getChromosomes()[0], 0.0005f);
+        microbe.mutate(r, 0.4f, 0.5f, 0.1f, 0.4f, 0.1f, 0.1f);
+        assertEquals(0.1f, microbe.fitness(), 0.01f);
+        assertArrayEquals(new float[] {0.99f, 0.99f, 0.392f, 0.99f, 0.99f, 0.991f, 0.486f, 0.991f, 0.515f, 0.99f}, microbe.getChromosomes()[0], 0.0005f);
 
         Microbe offspring = microbe.replicate(r, true, 10, 0f);
-        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
-        assertEquals(0.125f, offspring.fitness(), 0.001f);
-        assertArrayEquals(new float[] {0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, offspring.getChromosomes()[0], 0.0005f);
+        microbe.mutate(r, 0.33f, 0.5f, 0.5f, 0.4f, 0.1f, 0.5f);
+        assertEquals(0.1f, offspring.fitness(), 0.01f);
+        assertArrayEquals(new float[] {0.99f, 0.99f, 0.392f, 0.99f, 0.99f, 0.991f, 0.486f, 0.991f, 0.515f, 0.99f}, offspring.getChromosomes()[0], 0.0005f);
         assertTrue(microbe.isDead());
 
         assertNotEquals(0.125f, microbe.fitness(), 0.001f);
@@ -63,11 +63,11 @@ public class MicrobeTest {
         assertEquals(1f, good.fitness(), 0.01f);
 
         Microbe bad = new Microbe(0.99f, 1, 10, false);
-        bad.mutate(r, 0.33f, 0.2f, 0.4f, 0.1f);
+        bad.mutate(r, 0.33f, 0.2f, 0f, 0.4f, 0.1f, 0f);
         assertEquals(0.5125f, bad.fitness(), 0.0005f);
 
         Microbe dead = new Microbe(0.99f, 1, 10, false);
-        dead.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
+        dead.mutate(r, 0.33f, 0.5f, 0f, 0.4f, 0.1f, 0f);
         assertEquals(0.2507f, dead.fitness(), 0.0005f);
 
         assertEquals(0.5125f, Microbe.selectOffspring(r, Cf.list(bad), 0.3f, 1, false, 0f, false).single().fitness(), 0.0005f);
@@ -79,7 +79,7 @@ public class MicrobeTest {
     public void testPloidy() {
         Microbe microbe = new Microbe(0.99f, 6, 10, false);
         Random r = new Random(0);
-        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
+        microbe.mutate(r, 0.33f, 0.5f, 0f, 0.4f, 0.1f, 0f);
 
         Set<String> chromosomes = Cf.hashSet();
         for (float[] chromosome : microbe.getChromosomes()) chromosomes.add(Arrays.toString(chromosome));
@@ -104,7 +104,7 @@ public class MicrobeTest {
     public void testDownsize() {
         Microbe microbe = new Microbe(0.99f, 2, 10, true);
         Random r = new Random(0);
-        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
+        microbe.mutate(r, 0.33f, 0.5f, 0f, 0.4f, 0.1f, 0f);
 
         Microbe sibling = microbe.replicate(r, false, 10, 1.0f);
         assertEquals(1, microbe.getChromosomes().length);
@@ -116,7 +116,7 @@ public class MicrobeTest {
     public void testConversion() {
         Microbe microbe = new Microbe(0.99f, 2, 10, false);
         Random r = new Random(0);
-        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
+        microbe.mutate(r, 0.33f, 0.5f, 0f, 0.4f, 0.1f, 0f);
 
         assertEquals(1.003f, microbe.fitness(), 0.0005f);
         assertArrayEquals(new float[] {0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, microbe.getChromosomes()[0], 0.0005f);
@@ -132,7 +132,7 @@ public class MicrobeTest {
     public void testCrossing() {
         Microbe microbe = new Microbe(0.99f, 2, 10, false);
         Random r = new Random(0);
-        microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
+        microbe.mutate(r, 0.33f, 0.5f, 0f, 0.4f, 0.1f, 0f);
 
         assertEquals(1.003f, microbe.fitness(), 0.0005f);
         assertArrayEquals(new float[] {0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, microbe.getChromosomes()[0], 0.0005f);
@@ -148,11 +148,11 @@ public class MicrobeTest {
     public void testSubstitution() {
         Microbe donor = new Microbe(0.99f, 2, 10, false);
         Random r = new Random(0);
-        donor.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
+        donor.mutate(r, 0.33f, 0.5f, 0f, 0.4f, 0.1f, 0f);
         assertEquals(1.003f, donor.fitness(), 0.0005f);
 
         Microbe receiver = new Microbe(0.99f, 2, 10, false);
-        receiver.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
+        receiver.mutate(r, 0.33f, 0.5f, 0f, 0.4f, 0.1f, 0f);
         assertEquals(1.001f, receiver.fitness(), 0.0005f);
 
         receiver.chromosomeSubstitution(r, donor);
@@ -166,11 +166,11 @@ public class MicrobeTest {
     public void testExchange() {
         Microbe first = new Microbe(0.99f, 2, 10, false);
         Random r = new Random(0);
-        first.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
+        first.mutate(r, 0.33f, 0.5f, 0f, 0.4f, 0.1f, 0f);
         assertEquals(1.003f, first.fitness(), 0.0005f);
 
         Microbe second = new Microbe(0.99f, 2, 10, false);
-        second.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
+        second.mutate(r, 0.33f, 0.5f, 0f, 0.4f, 0.1f, 0f);
         assertEquals(1.001f, second.fitness(), 0.0005f);
 
         float[] firstCopy = first.getChromosomes()[1].clone();
@@ -188,8 +188,8 @@ public class MicrobeTest {
         Random r = new Random(0);
         Microbe donor = new Microbe(0.99f, 1, 10, false);
         Microbe receiver = new Microbe(0.99f, 1, 10, false);
-        donor.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
-        receiver.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
+        donor.mutate(r, 0.33f, 0.5f, 0f, 0.4f, 0.1f, 0f);
+        receiver.mutate(r, 0.33f, 0.5f, 0f, 0.4f, 0.1f, 0f);
         assertArrayEquals(new float[] {0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, donor.getChromosomes()[0], 0.0005f);
         assertArrayEquals(new float[] {0.99f, 0.99f, 0.99f, 0.495f, 0.991f, 0.991f, 0.99f, 0.495f, 0.991f, 0.99f}, receiver.getChromosomes()[0], 0.0005f);
         float donorFitness = donor.fitness();

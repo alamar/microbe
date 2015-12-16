@@ -62,8 +62,10 @@ public class Model {
 
         float geneMutationChance = Float.parseFloat(model.getProperty("gene.mutation.chance"));
         float negativeEffect = Float.parseFloat(model.getProperty("negative.effect"));
+        float negativeDeviation = Float.parseFloat(model.getProperty("negative.deviation"));
         float mutationPositiveChance = Float.parseFloat(model.getProperty("mutation.positive.chance"));
         float positiveEffect = Float.parseFloat(model.getProperty("positive.effect"));
+        float positiveDeviation = Float.parseFloat(model.getProperty("positive.deviation"));
         float luckRatio = Float.parseFloat(model.getProperty("luck.ratio"));
 
         float conversionRatio = Float.parseFloat(model.getProperty("conversion.ratio"));
@@ -86,7 +88,7 @@ public class Model {
             float totalChromosomes = 0;
             for (Microbe microbe : microbes) {
                 totalFitness += microbe.fitness();
-                microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect);
+                microbe.mutate(r, geneMutationChance, negativeEffect, negativeDeviation, mutationPositiveChance, positiveEffect, positiveDeviation);
                 totalChromosomes += microbe.getChromosomes().length;
             }
             float avgFitness = totalFitness / (float) microbes.size();
