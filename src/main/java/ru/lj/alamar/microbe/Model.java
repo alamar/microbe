@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Random;
@@ -89,6 +90,8 @@ public class Model {
 
         if (stat == Stat.DEV) {
             print(out, "step\tpopulation\taverage fitness\tstandard deviation");
+        } else if (stat == Stat.BOX) {
+            print(out, "step\tpopulation\tmedian\t10%\t25%\t75%\t90%");
         } else {
             print(out, "step\tpopulation\taverage fitness");
         }
@@ -96,20 +99,16 @@ public class Model {
         for (int s = 0; s < steps; s++) {
             float totalFitness = 0f;
             float totalChromosomes = 0;
+            float[] fitnesses = new float[microbes.size()];
+            int i = 0;
             for (Microbe microbe : microbes) {
-                totalFitness += microbe.fitness();
+                float fitness = microbe.fitness();
+                totalFitness += fitness;
+                fitnesses[i++] = fitness;
                 microbe.mutate(r, geneMutationChance, negativeEffect, mutationPositiveChance, positiveEffect);
                 totalChromosomes += microbe.getChromosomes().length;
             }
-            float avgFitness = totalFitness / (float) microbes.size();
-            float devFitness = 0f;
-            if (stat == Stat.DEV) {
-                float sdev = 0f;
-                for (Microbe microbe : microbes) {
-                    sdev += (avgFitness - microbe.fitness()) * (avgFitness - microbe.fitness());
-                }
-                devFitness = (float) Math.sqrt(sdev / (microbes.size() - 1f));
-            }
+
             for (int t = 0; t < conversionRatio * totalChromosomes; t++) {
                 Microbe target = microbes.get(r.nextInt(microbes.size()));
                 target.conversion(r);
@@ -144,12 +143,9 @@ public class Model {
                 break;
             }
 
-            if (stat == Stat.DEV) {
-                print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness) + "\t" + FMT.format(devFitness));
-            } else {
-                print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness));
-            }
-
+            float avgFitness = totalFitness / (float) microbes.size();
+            String statCols = computeStat(stat, avgFitness, fitnesses);
+            print(out, s + "\t" + microbes.size() + "\t" + statCols);
             if (variploidPopulation > 0) {
                 printPloidy(out, ploidy, microbes.size());
             }
@@ -171,6 +167,28 @@ public class Model {
             out.println();
         }*/
         return dataset;
+    }
+
+    static String computeStat(Stat stat, float avgFitness, float[] fitnesses) {
+        if (stat == Stat.DEV) {
+            float sdev = 0f;
+            for (float fitness : fitnesses) {
+                sdev += (avgFitness - fitness) * (avgFitness - fitness);
+            }
+            float devFitness = (float) Math.sqrt(sdev / (fitnesses.length - 1f));
+            return FMT.format(avgFitness) + "\t" + FMT.format(devFitness);
+        }
+        if (stat == Stat.BOX) {
+            Arrays.sort(fitnesses);
+            float median = fitnesses[fitnesses.length / 2];
+            float lowBox = fitnesses[fitnesses.length / 4];
+            float highBox = fitnesses[(fitnesses.length / 4) * 3];
+            float lowWhisker = fitnesses[fitnesses.length / 10];
+            float highWhisker = fitnesses[(fitnesses.length / 10) * 9];
+            return FMT.format(median) + "\t" + FMT.format(lowWhisker) + "\t" + FMT.format(lowBox)
+                    + "\t" + FMT.format(highBox) + "\t" + FMT.format(highWhisker);
+        }
+        return FMT.format(avgFitness);
     }
 
     private static final int BAR_WIDTH = 50;
