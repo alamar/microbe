@@ -74,7 +74,7 @@ public class MicrobeTest {
         assertEquals(3, Microbe.selectOffspring(r, Cf.list(bad, good, dead), 0.3f, 1, false, 0f, false).size());
         assertEquals(1f, Microbe.selectOffspring(r, Cf.list(bad, good), 0.3f, 1, false, 0f, false).shuffle().first().fitness(), 0.0005f);
     }
-
+/*
     @Test
     public void testPloidy() {
         Microbe microbe = new Microbe(0.99f, 6, 10, false);
@@ -182,7 +182,7 @@ public class MicrobeTest {
         assertNotEquals(1.003f, first.fitness(), 0.0005f);
         assertNotEquals(1.001f, second.fitness(), 0.0005f);
     }
-
+*/
     @Test
     public void testHorizontalTransfer() {
         Random r = new Random(0);

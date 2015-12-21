@@ -1,5 +1,6 @@
 package ru.lj.alamar.microbe;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 
@@ -40,14 +41,19 @@ public class Microbe {
         if (fitness >= 0) return fitness;
 
         float result = 1.0f;
+        float[] alleles = new float[chromosomes.length];
         for (int g = 0; g < chromosomes[0].length; g++) {
-            float geneFitness = chromosomes[0][g];
-            for (int p = 1; p < chromosomes.length; p++) {
-                if (chromosomes[p][g] > geneFitness) {
-                    geneFitness = chromosomes[p][g];
-                }
+            for (int c = 0; c < alleles.length; c++) {
+                alleles[c] = chromosomes[c][g];
             }
-            result *= (geneFitness / normalFitness);
+            Arrays.sort(alleles);
+            float geneFitness = 0f;
+            float divisor = 0;
+            for (int i = 1; i <= alleles.length; i++) {
+                geneFitness += alleles[i - 1] * i;
+                divisor += i;
+            }
+            result *= ((geneFitness / divisor) / normalFitness);
         }
         fitness = result;
         return result;
