@@ -18,6 +18,12 @@ import ru.yandex.bolts.collection.ListF;
  */
 public class Model {
 
+    public enum Stat {
+        AVG,
+        DEV,
+        BOX;
+    }
+
     private static final DecimalFormat FMT = new DecimalFormat("0.#####", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
     public static void main(String[] args) throws Exception {
@@ -79,7 +85,13 @@ public class Model {
         boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
         boolean mitosis = "true".equalsIgnoreCase(model.getProperty("mitosis"));
 
-        print(out, "step\tpopulation\taverage fitness");
+        Stat stat = Stat.valueOf(model.getProperty("stat").toUpperCase());
+
+        if (stat == Stat.DEV) {
+            print(out, "step\tpopulation\taverage fitness\tstandard deviation");
+        } else {
+            print(out, "step\tpopulation\taverage fitness");
+        }
         ListF<Float> dataset = Cf.arrayList();
         for (int s = 0; s < steps; s++) {
             float totalFitness = 0f;
@@ -90,6 +102,14 @@ public class Model {
                 totalChromosomes += microbe.getChromosomes().length;
             }
             float avgFitness = totalFitness / (float) microbes.size();
+            float devFitness = 0f;
+            if (stat == Stat.DEV) {
+                float sdev = 0f;
+                for (Microbe microbe : microbes) {
+                    sdev += (avgFitness - microbe.fitness()) * (avgFitness - microbe.fitness());
+                }
+                devFitness = (float) Math.sqrt(sdev / (microbes.size() - 1f));
+            }
             for (int t = 0; t < conversionRatio * totalChromosomes; t++) {
                 Microbe target = microbes.get(r.nextInt(microbes.size()));
                 target.conversion(r);
@@ -123,7 +143,13 @@ public class Model {
             if (microbes.isEmpty()) {
                 break;
             }
-            print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness));
+
+            if (stat == Stat.DEV) {
+                print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness) + "\t" + FMT.format(devFitness));
+            } else {
+                print(out, s + "\t" + microbes.size() + "\t" + FMT.format(avgFitness));
+            }
+
             if (variploidPopulation > 0) {
                 printPloidy(out, ploidy, microbes.size());
             }
