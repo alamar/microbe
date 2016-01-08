@@ -14,6 +14,8 @@ public class Microbe {
     // fitness: 0.0 to 1.0
     public static final float ALIVE_FITNESS = 0.5f;
     private float normalFitness;
+    // [[chromosomeId gene gene gene gene...]]
+    // Yes I know it's kind of troublesome
     private float[][] chromosomes;
     private boolean changePloidy;
     // cached; trouble source
@@ -25,14 +27,16 @@ public class Microbe {
         this.chromosomes = inheritedChromosomes;
     }
 
-    public Microbe(float normalFitness, int ploidy, int numGenes, boolean changePloidy) {
+    public Microbe(float normalFitness, int ploidy, int numGenes, boolean changePloidy, int chromosomeIdBase) {
         this.normalFitness = normalFitness;
         this.changePloidy = changePloidy;
-        chromosomes = new float[ploidy][numGenes];
+        chromosomes = new float[ploidy][numGenes + 1];
+        chromosomeIdBase *= ploidy;
         for (float[] chromosome : chromosomes) {
-           for (int g = 0; g < numGenes; g++) {
+           for (int g = 1; g <= numGenes; g++) {
                chromosome[g] = normalFitness;
            }
+           chromosome[0] = chromosomeIdBase++;
         }
     }
 
@@ -40,7 +44,7 @@ public class Microbe {
         if (fitness >= 0) return fitness;
 
         float result = 1.0f;
-        for (int g = 0; g < chromosomes[0].length; g++) {
+        for (int g = 1; g < chromosomes[0].length; g++) {
             float geneFitness = chromosomes[0][g];
             for (int p = 1; p < chromosomes.length; p++) {
                 if (chromosomes[p][g] > geneFitness) {
@@ -60,7 +64,7 @@ public class Microbe {
     public void mutate(Random r, float geneMutationChance, float negativeModifier, float mutationPositiveChance, float positiveModifier) {
         for (int c = 0; c < chromosomes.length; c++) {
             float[] chromosome = chromosomes[c];
-            for (int g = 0; g < chromosome.length; g++) {
+            for (int g = 1; g < chromosome.length; g++) {
                 if (r.nextFloat() > geneMutationChance) continue;
                 if (r.nextFloat() < mutationPositiveChance) {
                     chromosome[g] = Math.min(1f, 1f - (1f - chromosome[g]) * (1f - positiveModifier));
@@ -82,39 +86,39 @@ public class Microbe {
 
     // XXX Following 3 methods too similar!
     public void conversion(Random r) {
-        int genes = chromosomes[0].length;
+        int genes = chromosomes[0].length - 1;
         int startingGene = r.nextInt(genes);
         int fragmentLength = 1 + genes / 20 + r.nextInt(genes / 10 + 1);
         int targetChromosomeNo = r.nextInt(chromosomes.length);
         float[] sourceChromosome = otherChromosome(r, targetChromosomeNo);
         for (int g = startingGene; g < startingGene + fragmentLength; g++) {
-            chromosomes[targetChromosomeNo][g % genes] = sourceChromosome[g % genes];
+            chromosomes[targetChromosomeNo][1 + g % genes] = sourceChromosome[1 + g % genes];
         }
         this.fitness = -1f;
     }
 
     public void crossing(Random r) {
-        int genes = chromosomes[0].length;
+        int genes = chromosomes[0].length - 1;
         int startingGene = r.nextInt(genes);
         int fragmentLength = 1 + genes / 20 + r.nextInt(genes / 10 + 1);
         int oneChromosomeNo = r.nextInt(chromosomes.length);
         float[] twoChromosome = otherChromosome(r, oneChromosomeNo);
         for (int g = startingGene; g < startingGene + fragmentLength; g++) {
-            float gswp = chromosomes[oneChromosomeNo][g % genes];
-            chromosomes[oneChromosomeNo][g % genes] = twoChromosome[g % genes];
-            twoChromosome[g % genes] = gswp;
+            float gswp = chromosomes[oneChromosomeNo][1 + g % genes];
+            chromosomes[oneChromosomeNo][1 + g % genes] = twoChromosome[1 + g % genes];
+            twoChromosome[1 + g % genes] = gswp;
         }
         this.fitness = -1f;
     }
 
     public void horizontalTransfer(Random r, Microbe donor) {
-        int genes = chromosomes[0].length;
+        int genes = chromosomes[0].length - 1;
         int startingGene = r.nextInt(genes);
         int fragmentLength = 1 + genes / 20 + r.nextInt(genes / 10 + 1);
         int targetChromosome = r.nextInt(chromosomes.length);
         int sourceChromosome = r.nextInt(donor.getChromosomes().length);
         for (int g = startingGene; g < startingGene + fragmentLength; g++) {
-            chromosomes[targetChromosome][g % genes] = donor.getChromosomes()[sourceChromosome][g % genes];
+            chromosomes[targetChromosome][1 + g % genes] = donor.getChromosomes()[sourceChromosome][1 + g % genes];
         }
         this.fitness = -1f;
     }

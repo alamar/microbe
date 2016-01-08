@@ -13,6 +13,7 @@ import java.util.Random;
 
 import ru.yandex.bolts.collection.Cf;
 import ru.yandex.bolts.collection.ListF;
+import ru.yandex.bolts.collection.MapF;
 
 /**
  * @author ilyak
@@ -60,11 +61,11 @@ public class Model {
         int chromosomes = Integer.parseInt(model.getProperty("chromosomes"));
         int genes = Integer.parseInt(model.getProperty("genes"));
         for (int i = 0; i < population; i++) {
-            microbes.add(new Microbe(normalFitness, chromosomes, genes, false));
+            microbes.add(new Microbe(normalFitness, chromosomes, genes, false, i));
         }
         int variploidPopulation = Integer.parseInt(model.getProperty("variploid.population"));
         for (int i = 0; i < variploidPopulation; i++) {
-            microbes.add(new Microbe(normalFitness, chromosomes, genes, true));
+            microbes.add(new Microbe(normalFitness, chromosomes, genes, true, i + population));
         }
 
         float geneMutationChance = Float.parseFloat(model.getProperty("gene.mutation.chance"));
@@ -166,6 +167,17 @@ public class Model {
             }
             out.println();
         }*/
+        if (microbes.isNotEmpty()) {
+            MapF<Integer, Integer> histogram = Cf.hashMap();
+            for (Microbe microbe : microbes) {
+                for (float[] chromosome : microbe.getChromosomes()) {
+                    int idx = (int) chromosome[0];
+                    histogram.put(idx, 1 + histogram.getOrElse(idx, 0));
+                }
+            }
+            out.println("Chromosome histogram: ");
+            out.println(histogram.entries().sortBy2().take(20).reverse().mkString("\n", "\t"));
+        }
         return dataset;
     }
 
