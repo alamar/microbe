@@ -170,43 +170,50 @@ public class Model {
             out.println();
         }*/
         if (microbes.isNotEmpty()) {
-            Tuple2List<Integer, float[]> idxChromosomes = Tuple2List.arrayList();
-            for (Microbe microbe : microbes) {
-                for (float[] chromosome : microbe.getChromosomes()) {
-                    int idx = (int) chromosome[0];
-
-                    idxChromosomes.add(idx, chromosome);
-                }
-            }
-            MapF<Integer, ListF<float[]>> idxToChromosomes = idxChromosomes.groupBy1();
-            out.println("Chromosome histogram: ");
-            //out.println(idxChromosomes.map2(Cf.List.sizeF()).sortBy2().take(20).reverse().mkString("\n", "\t"));
-            for (Tuple2<Integer, ListF<float[]>> entry :
-                    idxToChromosomes.entries().sortBy2(Cf.List.sizeF().andThenNaturalComparator().invert()).take(20))
-            {
-                int count = entry.get2().size();
-                print(out, "#" + entry.get1() + "\t" + count);
-                if (count <= 1) continue;
-                float avgAvgGene = 0f;
-                float[] avgGenes = new float[genes];
-                float[] geneAcrossChromosomes = new float[count];
-                for (int g = 1; g <= genes; g++) {
-                    int i = 0;
-                    float avgGene = 0f;
-                    for (float[] chromosome : entry.get2()) {
-                        avgGene += chromosome[g] / normalFitness;
-                        geneAcrossChromosomes[i++] = chromosome[g] / normalFitness;
-                    }
-                    avgGene = avgGene / (float) count;
-                    avgGenes[g - 1] = avgGene;
-                    avgAvgGene += avgGene;
-                    print(out, "for gene #" + g + ":\t" + computeStat(Stat.DEV, avgGene, geneAcrossChromosomes));
-                }
-                avgAvgGene = avgAvgGene / (float) genes;
-                print(out, "for averaged genes:\t" + computeStat(Stat.DEV, avgAvgGene, avgGenes));
-            }
+            outputChromosomeStats(out, microbes, normalFitness, genes);
         }
         return dataset;
+    }
+
+    private static void outputChromosomeStats(PrintWriter out, ListF<Microbe> microbes,
+            float normalFitness, int genes)
+    {
+        Tuple2List<Integer, float[]> idxChromosomes = Tuple2List.arrayList();
+        for (Microbe microbe : microbes) {
+            for (float[] chromosome : microbe.getChromosomes()) {
+                int idx = (int) chromosome[0];
+
+                idxChromosomes.add(idx, chromosome);
+            }
+        }
+        MapF<Integer, ListF<float[]>> idxToChromosomes = idxChromosomes.groupBy1();
+        out.println("Chromosome histogram: ");
+        //out.println(idxChromosomes.map2(Cf.List.sizeF()).sortBy2().take(20).reverse().mkString("\n", "\t"));
+        for (Tuple2<Integer, ListF<float[]>> entry :
+                idxToChromosomes.entries().sortBy2(Cf.List.sizeF().andThenNaturalComparator().invert()).take(20))
+        {
+            int count = entry.get2().size();
+            print(out, "#");
+            print(out, "#" + entry.get1());
+            if (count <= 1) continue;
+            float avgAvgGene = 0f;
+            float[] avgGenes = new float[genes];
+            float[] geneAcrossChromosomes = new float[count];
+            for (int g = 1; g <= genes; g++) {
+                int i = 0;
+                float avgGene = 0f;
+                for (float[] chromosome : entry.get2()) {
+                    avgGene += chromosome[g] / normalFitness;
+                    geneAcrossChromosomes[i++] = chromosome[g] / normalFitness;
+                }
+                avgGene = avgGene / (float) count;
+                avgGenes[g - 1] = avgGene;
+                avgAvgGene += avgGene;
+                print(out, "for gene #" + g + ":\t" + computeStat(Stat.DEV, avgGene, geneAcrossChromosomes));
+            }
+            avgAvgGene = avgAvgGene / (float) genes;
+            print(out, "chromosome #" + entry.get1() + "\t" + count + "\t" + computeStat(Stat.DEV, avgAvgGene, avgGenes));
+        }
     }
 
     static String computeStat(Stat stat, float avgFitness, float[] fitnesses) {
