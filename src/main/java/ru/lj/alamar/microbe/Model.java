@@ -188,13 +188,14 @@ public class Model {
         }
         MapF<Integer, ListF<float[]>> idxToChromosomes = idxChromosomes.groupBy1();
         out.println("Chromosome histogram: ");
-        //out.println(idxChromosomes.map2(Cf.List.sizeF()).sortBy2().take(20).reverse().mkString("\n", "\t"));
+        out.println(idxToChromosomes.mapValues(Cf.List.sizeF()).entries().sortBy2().take(20).reverse().mkString("\n", "\t"));
         for (Tuple2<Integer, ListF<float[]>> entry :
                 idxToChromosomes.entries().sortBy2(Cf.List.sizeF().andThenNaturalComparator().invert()).take(20))
         {
             int count = entry.get2().size();
             print(out, "#");
             print(out, "#" + entry.get1());
+            print(out, "chromosome\tgene\tavg\tdev");
             if (count <= 1) continue;
             float avgAvgGene = 0f;
             float[] avgGenes = new float[genes];
@@ -209,10 +210,10 @@ public class Model {
                 avgGene = avgGene / (float) count;
                 avgGenes[g - 1] = avgGene;
                 avgAvgGene += avgGene;
-                print(out, "for gene #" + g + ":\t" + computeStat(Stat.DEV, avgGene, geneAcrossChromosomes));
+                print(out, "c" + entry.get1() + "\tg" + g + "\t" + computeStat(Stat.DEV, avgGene, geneAcrossChromosomes));
             }
             avgAvgGene = avgAvgGene / (float) genes;
-            print(out, "chromosome #" + entry.get1() + "\t" + count + "\t" + computeStat(Stat.DEV, avgAvgGene, avgGenes));
+            print(out, "c" + entry.get1() + "\tavg\t" + computeStat(Stat.DEV, avgAvgGene, avgGenes));
         }
     }
 
