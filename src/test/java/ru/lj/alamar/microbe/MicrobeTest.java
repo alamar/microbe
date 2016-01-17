@@ -47,7 +47,7 @@ public class MicrobeTest {
         assertEquals(0.125f, microbe.fitness(), 0.001f);
         assertArrayEquals(new float[] {1f, 0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, microbe.getChromosomes()[0], 0.0005f);
 
-        Microbe offspring = microbe.replicate(r, true, 10, 0f);
+        Microbe offspring = microbe.replicate(r, true, 10, 0.2f, 0f);
         microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
         assertEquals(0.125f, offspring.fitness(), 0.001f);
         assertArrayEquals(new float[] {1f, 0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, offspring.getChromosomes()[0], 0.0005f);
@@ -70,9 +70,9 @@ public class MicrobeTest {
         dead.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
         assertEquals(0.2507f, dead.fitness(), 0.0005f);
 
-        assertEquals(0.5125f, Microbe.selectOffspring(r, Cf.list(bad), 0.3f, 1, false, 0f, false).single().fitness(), 0.0005f);
-        assertEquals(3, Microbe.selectOffspring(r, Cf.list(bad, good, dead), 0.3f, 1, false, 0f, false).size());
-        assertEquals(1f, Microbe.selectOffspring(r, Cf.list(bad, good), 0.3f, 1, false, 0f, false).shuffle().first().fitness(), 0.0005f);
+        assertEquals(0.5125f, Microbe.selectOffspring(r, Cf.list(bad), 0.3f, 1, false, 0.2f, 0f, false).single().fitness(), 0.0005f);
+        assertEquals(3, Microbe.selectOffspring(r, Cf.list(bad, good, dead), 0.3f, 1, false, 0.2f, 0f, false).size());
+        assertEquals(1f, Microbe.selectOffspring(r, Cf.list(bad, good), 0.3f, 1, false, 0.2f, 0f, false).shuffle().first().fitness(), 0.0005f);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class MicrobeTest {
         assertEquals(1.006f, microbe.fitness(), 0.0005f);
         assertArrayEquals(new float[] {0f, 0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, microbe.getChromosomes()[0], 0.0005f);
         assertArrayEquals(new float[] {1f, 0.99f, 0.99f, 0.99f, 0.495f, 0.991f, 0.991f, 0.99f, 0.495f, 0.991f, 0.99f}, microbe.getChromosomes()[1], 0.0005f);
-        Microbe offspring = microbe.replicate(r, false, 0, 0f);
+        Microbe offspring = microbe.replicate(r, false, 0, 0.2f, 0f);
         for (int i = 0; i < 6; i++) {
             float[] chromosome1 = offspring.getChromosomes()[i];
             float[] chromosome2 = microbe.getChromosomes()[i];
@@ -106,7 +106,7 @@ public class MicrobeTest {
         Random r = new Random(0);
         microbe.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
 
-        Microbe sibling = microbe.replicate(r, false, 10, 1.0f);
+        Microbe sibling = microbe.replicate(r, false, 10, 0.2f, 1.0f);
         assertEquals(1, microbe.getChromosomes().length);
         assertEquals(1, sibling.getChromosomes().length);
         assertArrayNotEquals(microbe.getChromosomes()[0], sibling.getChromosomes()[0], 0.0005f);

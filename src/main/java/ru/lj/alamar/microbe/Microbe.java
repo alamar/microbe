@@ -142,7 +142,7 @@ public class Microbe {
 
     private static float[][] OF_CHROMOSOMES = new float[0][0];
     // XXX Mutates (not in biological sense :)
-    public Microbe replicate(Random r, boolean inexact, int maxChromosomes, float downsizeChance) {
+    public Microbe replicate(Random r, boolean inexact, int maxChromosomes, float unequalDivisionChance, float downsizeChance) {
         ListF<float[]> copies = Cf.arrayList();
         int targetPloidy = chromosomes.length;
         if (!changePloidy) {
@@ -168,7 +168,7 @@ public class Microbe {
         ListF<float[]> doubled = Cf.arrayList(copies.take(Math.max(targetPloidy, 2)).plus(chromosomes));
         Collections.shuffle(doubled, r);
         int splitAt = targetPloidy;
-        if (changePloidy && !downsize && r.nextFloat() < 0.2f) {
+        if (changePloidy && !downsize && r.nextFloat() < unequalDivisionChance) {
             splitAt++;
         }
 
@@ -189,7 +189,7 @@ public class Microbe {
     }
 
     public static ListF<Microbe> selectOffspring(Random r, ListF<Microbe> population, Float luckRatio,
-            int maxChromosomes, boolean inexactDuplication, Float downsizeChance, boolean mitosis) {
+            int maxChromosomes, boolean inexactDuplication, float unequalDivisionChance, float downsizeChance, boolean mitosis) {
         Tuple2List<Float, Microbe> withFitnessAndLuck = Tuple2List.arrayList();
         // Hope we don't run off so far
         float minFitness = 2f;
@@ -206,7 +206,8 @@ public class Microbe {
         }
         for (Microbe microbe : population) {
             if (microbe.isDead()) continue;
-            Microbe sibling = mitosis ? microbe.mitosis() : microbe.replicate(r, inexactDuplication, maxChromosomes, downsizeChance);
+            Microbe sibling = mitosis ? microbe.mitosis() : microbe.replicate(r, inexactDuplication, maxChromosomes,
+                    unequalDivisionChance, downsizeChance);
             if (!microbe.isDead()) {
                 withFitnessAndLuck.add(((microbe.fitness() - minFitness) / (maxFitness - minFitness)) * (1f - luckRatio) + r.nextFloat() * luckRatio, microbe);
             }

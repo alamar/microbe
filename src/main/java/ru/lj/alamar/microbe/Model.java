@@ -80,6 +80,7 @@ public class Model {
         float crossingRatio = Float.parseFloat(model.getProperty("crossing.ratio"));
 
         int maxVariploidChromosomes = Integer.parseInt(model.getProperty("max.variploid.chromosomes"));
+        float unequalDivisionChance = Float.parseFloat(model.getProperty("unequal.division.chance"));
         float downsizeChance = Float.parseFloat(model.getProperty("downsize.chance"));
 
         float horizontalTransferRatio = Float.parseFloat(model.getProperty("horizontal.transfer.ratio"));
@@ -141,7 +142,8 @@ public class Model {
                     ploidy[microbe.isChangePloidy() ? microbe.getPloidy() : 0]++;
                 }
             }
-            microbes = Microbe.selectOffspring(r, microbes, luckRatio, maxVariploidChromosomes, inexactDuplication, downsizeChance, mitosis);
+            microbes = Microbe.selectOffspring(r, microbes, luckRatio, maxVariploidChromosomes, inexactDuplication,
+                    unequalDivisionChance, downsizeChance, mitosis);
             if (microbes.isEmpty()) {
                 break;
             }
