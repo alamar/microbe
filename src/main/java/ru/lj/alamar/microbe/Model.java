@@ -159,18 +159,23 @@ public class Model {
                 out.flush();
             }
         }
-        /*for (Microbe microbe : microbes.shuffle()) {
-            for (float[] chromosome : microbe.getChromosomes()) {
-                for (float gene : chromosome) {
-                    out.print(FMT.format(gene));
-                    out.print("\t");
-                }
-                out.println();
-            }
-            out.println();
-        }*/
+
         if (microbes.isNotEmpty()) {
             outputChromosomeStats(out, microbes, normalFitness, genes);
+            if ("true".equalsIgnoreCase(model.getProperty("dump"))) {
+                for (Microbe microbe : microbes.shuffle()) {
+                    for (float[] chromosome : microbe.getChromosomes()) {
+                        out.print(FMT.format(chromosome[0]));
+                        out.print("\t");
+                        for (int g = 1; g < genes; g++) {
+                            out.print(FMT.format(chromosome[g]));
+                            out.print("\t");
+                        }
+                        out.println();
+                    }
+                    out.println();
+                }
+            }
         }
         return dataset;
     }
