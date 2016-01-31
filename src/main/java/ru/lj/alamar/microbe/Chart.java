@@ -64,18 +64,20 @@ public class Chart {
         JFreeChart chart = ChartFactory.createXYLineChart("", "generation #", "average fitness", data);
 
         XYPlot plot = (XYPlot) chart.getPlot();
-        int i = 0;
         int s = 0;
+        int idx = 0;
         for (Tuple2List<String, ListF<Float>> segment : dataset) {
+            int i = 0;
             for (Tuple2<String, ListF<Float>> run : segment) {
-                plot.getRenderer().setSeriesPaint(i,
-                        s < 5 ? colorSets[s % 5][(i - s) % 4] : colorSets[i % 5][(i / 4) % 4]);
-                plot.getRenderer().setSeriesStroke(i, new BasicStroke(3.5f));
+                plot.getRenderer().setSeriesPaint(idx,
+                        s < 5 ? colorSets[s % 5][i % 4] : colorSets[s % 5][(s / 5 + i) % 4]);
+                plot.getRenderer().setSeriesStroke(idx, new BasicStroke(3.5f));
                 i++;
+                idx++;
             }
             s++;
         }
-        min = ((float) Math.floor(min * 20.0f) - (i > 5 ? 2.0f : 1.0f)) / 20.0f;
+        min = ((float) Math.floor(min * 20.0f) - (idx > 5 ? 2.0f : 1.0f)) / 20.0f;
         max = ((float) Math.ceil(max * 20.0f) + 1.0f) / 20.0f;
 
         plot.setBackgroundPaint(new Color(0xF8, 0xF8, 0xF8));

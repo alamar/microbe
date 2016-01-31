@@ -2,6 +2,7 @@ package ru.lj.alamar.microbe;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
@@ -22,6 +23,12 @@ import ru.yandex.bolts.collection.Tuple2List;
  */
 public class Model {
 
+    private static class PropertiesFilter implements FilenameFilter {
+        public boolean accept(File dir, String name) {
+            return name.toLowerCase().endsWith(".properties");
+        }
+    }
+
     public enum Stat {
         AVG,
         DEV,
@@ -36,15 +43,31 @@ public class Model {
             System.err.println("See MODELS directory");
             System.exit(1);
         }
+        String firstArg = args[0];
         if (args.length > 1 && args[1] == null) {
-            args = new String[] { args[0] }; /* anti-maven */
+            args = new String[] { firstArg }; /* anti-maven */
         }
-        args[0] = args[0].replace(".properties", "");
-        String modelFullName = modelWithParameters(args);
+
+        File maybeDir = new File("models/" + firstArg);
+        if (!maybeDir.isDirectory()) {
+            runOneModel(args);
+            return;
+        }
+        for (String fileName : maybeDir.list(new PropertiesFilter())) {
+            String[] params = Arrays.copyOf(args, args.length);
+            params[0] = firstArg + "/" + fileName;
+            runOneModel(params);
+        }
+    }
+
+    public static void runOneModel(String[] params) throws Exception {
+        params[0] = params[0].replace(".properties", "");
+        String modelFullName = modelWithParameters(params);
         PrintWriter out = output(modelFullName);
-        String title = args[0] + " " + Cf.list(args).drop(1).mkString(" ");
+        String title = params[0].replaceAll(".*[/\\\\]", "").replaceAll("_", " ") + " " +
+                Cf.list(params).drop(1).mkString(" ");
         try {
-            Properties model = loadModel(args, out);
+            Properties model = loadModel(params, out);
             print(out, "model = " + title);
             Random r = new XorShiftRandom(Long.parseLong(model.getProperty("seed")));
             int steps = Integer.parseInt(model.getProperty("steps"));
