@@ -6,7 +6,16 @@
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>microbe</name>
-  <url>http://alamar.lj.ru</url>
+  <organization>
+    <name>Ilya Kasnacheev</name>
+    <url>http://alamar.lj.ru</url>
+  </organization>
+  <inceptionYear>2015</inceptionYear>
+
+  <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <license.licenseName>apache_v2</license.licenseName>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
