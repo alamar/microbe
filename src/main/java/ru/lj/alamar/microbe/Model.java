@@ -109,6 +109,8 @@ public class Model {
         float horizontalTransferRatio = Float.parseFloat(model.getProperty("horizontal.transfer.ratio"));
         float chromosomeSubstitutionRatio = Float.parseFloat(model.getProperty("chromosome.substitution.ratio"));
         float chromosomeExchangeRatio = Float.parseFloat(model.getProperty("chromosome.exchange.ratio"));
+        float pairingRatio = Float.parseFloat(model.getProperty("pairing.ratio"));
+        float homologicPairingRatio = Float.parseFloat(model.getProperty("homologic.pairing.ratio"));
 
         boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
         boolean mitosis = "true".equalsIgnoreCase(model.getProperty("mitosis"));
@@ -158,6 +160,16 @@ public class Model {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
                 recipient.chromosomeExchange(r, donor);
+            }
+            for (int t = 0; t < pairingRatio * totalChromosomes; t++) {
+                Microbe donor = microbes.get(r.nextInt(microbes.size()));
+                Microbe recipient = microbes.get(r.nextInt(microbes.size()));
+                recipient.pairing(r, donor, false);
+            }
+            for (int t = 0; t < homologicPairingRatio * totalChromosomes; t++) {
+                Microbe donor = microbes.get(r.nextInt(microbes.size()));
+                Microbe recipient = microbes.get(r.nextInt(microbes.size()));
+                recipient.pairing(r, donor, true);
             }
             int[] ploidy = new int[10];
             for (Microbe microbe : microbes) {
@@ -217,15 +229,15 @@ public class Model {
             }
         }
         MapF<Integer, ListF<float[]>> idxToChromosomes = idxChromosomes.groupBy1();
-        out.println("Chromosome histogram: ");
-        out.println(idxToChromosomes.mapValues(Cf.List.sizeF()).entries().sortBy2().take(20).reverse().mkString("\n", "\t"));
+        print(out, "Chromosome histogram: ");
+        print(out, idxToChromosomes.mapValues(Cf.List.sizeF()).entries().sortBy2().take(20).reverse().mkString("\n", "\t"));
         for (Tuple2<Integer, ListF<float[]>> entry :
                 idxToChromosomes.entries().sortBy2(Cf.List.sizeF().andThenNaturalComparator().invert()).take(20))
         {
             int count = entry.get2().size();
-            print(out, "#");
-            print(out, "#" + entry.get1());
-            print(out, "chromosome\tgene\tavg\tdev");
+            out.println("#");
+            out.println("#" + entry.get1());
+            out.println("chromosome\tgene\tavg\tdev");
             if (count <= 1) continue;
             float avgAvgGene = 0f;
             float[] avgGenes = new float[genes];
@@ -240,10 +252,10 @@ public class Model {
                 avgGene = avgGene / (float) count;
                 avgGenes[g - 1] = avgGene;
                 avgAvgGene += avgGene;
-                print(out, "c" + entry.get1() + "\tg" + g + "\t" + computeStat(Stat.DEV, avgGene, geneAcrossChromosomes));
+                out.println("c" + entry.get1() + "\tg" + g + "\t" + computeStat(Stat.DEV, avgGene, geneAcrossChromosomes));
             }
             avgAvgGene = avgAvgGene / (float) genes;
-            print(out, "c" + entry.get1() + "\tavg\t" + computeStat(Stat.DEV, avgAvgGene, avgGenes));
+            out.println("c" + entry.get1() + "\tavg\t" + computeStat(Stat.DEV, avgAvgGene, avgGenes));
         }
     }
 

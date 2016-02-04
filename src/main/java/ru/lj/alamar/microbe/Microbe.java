@@ -140,6 +140,42 @@ public class Microbe {
         this.fitness = -1f;
     }
 
+    // First exchange most similar chromosomes, then do crossing on them
+    public void pairing(Random r, Microbe peer, boolean homologic) {
+        int ownChromosomeNo = r.nextInt(chromosomes.length);
+        float[] chromosome = chromosomes[ownChromosomeNo];
+        int peerChromosomeNo = r.nextInt(peer.getChromosomes().length);
+        if (homologic) {
+            int bestMatches = 0;
+            for (int c = 0; c < peer.getChromosomes().length; c++) {
+                float[] peerChromosome = peer.getChromosomes()[c];
+                int matches = 0;
+                for (int i = 1; i < peerChromosome.length; i++) {
+                    if (chromosome[i] == peerChromosome[i]) {
+                        matches++;
+                    }
+                }
+                if (matches > bestMatches) {
+                    bestMatches = matches;
+                    peerChromosomeNo = c;
+                }
+            }
+        }
+        chromosomes[ownChromosomeNo] = peer.getChromosomes()[peerChromosomeNo];
+        peer.getChromosomes()[peerChromosomeNo] = chromosome;
+
+        int genes = chromosomes[0].length - 1;
+        int startingGene = r.nextInt(genes);
+        int fragmentLength = 1 + genes / 20 + r.nextInt(genes / 10 + 1);
+        for (int g = startingGene; g < startingGene + fragmentLength; g++) {
+            float gswp = chromosomes[ownChromosomeNo][1 + g % genes];
+            chromosomes[ownChromosomeNo][1 + g % genes] = chromosome[1 + g % genes];
+            chromosome[1 + g % genes] = gswp;
+        }
+        this.fitness = -1f;
+        peer.fitness = -1f;
+    }
+
     private static float[][] OF_CHROMOSOMES = new float[0][0];
     // XXX Mutates (not in biological sense :)
     public Microbe replicate(Random r, boolean inexact, int maxChromosomes, float unequalDivisionChance, float downsizeChance) {
