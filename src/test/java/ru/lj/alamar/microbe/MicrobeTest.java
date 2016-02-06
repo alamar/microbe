@@ -155,7 +155,7 @@ public class MicrobeTest {
         receiver.mutate(r, 0.33f, 0.5f, 0.4f, 0.1f);
         assertEquals(1.001f, receiver.fitness(), 0.0005f);
 
-        receiver.chromosomeSubstitution(r, donor);
+        receiver.chromosomeSubstitution(r, donor, false);
         assertArrayEquals(receiver.getChromosomes()[1], donor.getChromosomes()[1], 0.0005f);
 
         assertEquals(1.003f, donor.fitness(), 0.0005f);
@@ -175,7 +175,7 @@ public class MicrobeTest {
 
         float[] firstCopy = first.getChromosomes()[1].clone();
         float[] secondCopy = second.getChromosomes()[1].clone();
-        second.chromosomeExchange(r, first);
+        second.chromosomeExchange(r, first, false);
         assertArrayEquals(secondCopy, first.getChromosomes()[1], 0.0005f);
         assertArrayEquals(firstCopy, second.getChromosomes()[1], 0.0005f);
 
@@ -194,7 +194,7 @@ public class MicrobeTest {
         assertArrayEquals(new float[] {0f, 0.99f, 0.99f, 0.99f, 0.495f, 0.991f, 0.991f, 0.99f, 0.495f, 0.991f, 0.99f}, receiver.getChromosomes()[0], 0.0005f);
         float donorFitness = donor.fitness();
         float receiverFitness = receiver.fitness();
-        receiver.horizontalTransfer(r, donor);
+        receiver.horizontalTransfer(r, donor, false);
         assertArrayEquals(new float[] {1f, 0.99f, 0.99f, 0.495f, 0.99f, 0.495f, 0.495f, 0.99f, 0.99f, 0.991f, 0.99f}, donor.getChromosomes()[0], 0.0005f);
         assertArrayEquals(new float[] {0f, 0.99f, 0.99f, 0.99f, 0.99f, 0.495f, 0.991f, 0.99f, 0.495f, 0.991f, 0.99f}, receiver.getChromosomes()[0], 0.0005f);
         assertEquals(donorFitness, donor.fitness(), 0.0005f);

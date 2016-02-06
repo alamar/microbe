@@ -111,29 +111,29 @@ public class Microbe {
         this.fitness = -1f;
     }
 
-    public void horizontalTransfer(Random r, Microbe donor) {
+    public void horizontalTransfer(Random r, Microbe donor, boolean homologic) {
         int genes = chromosomes[0].length - 1;
         int startingGene = r.nextInt(genes);
         int fragmentLength = 1 + genes / 20 + r.nextInt(genes / 10 + 1);
         int targetChromosome = r.nextInt(chromosomes.length);
-        int sourceChromosome = r.nextInt(donor.getChromosomes().length);
+        int sourceChromosome = selectChromosome(r, donor, homologic, chromosomes[targetChromosome]);
         for (int g = startingGene; g < startingGene + fragmentLength; g++) {
             chromosomes[targetChromosome][1 + g % genes] = donor.getChromosomes()[sourceChromosome][1 + g % genes];
         }
         this.fitness = -1f;
     }
 
-    public void chromosomeSubstitution(Random r, Microbe donor) {
+    public void chromosomeSubstitution(Random r, Microbe donor, boolean homologic) {
         int targetChromosome = r.nextInt(chromosomes.length);
-        int sourceChromosome = r.nextInt(donor.getChromosomes().length);
+        int sourceChromosome = selectChromosome(r, donor, homologic, chromosomes[targetChromosome]);
         chromosomes[targetChromosome] = donor.getChromosomes()[sourceChromosome].clone();
         this.fitness = -1f;
     }
 
-    public void chromosomeExchange(Random r, Microbe peer) {
+    public void chromosomeExchange(Random r, Microbe peer, boolean homologic) {
         int ownChromosome = r.nextInt(chromosomes.length);
-        int peerChromosome = r.nextInt(peer.getChromosomes().length);
         float[] chromosome = chromosomes[ownChromosome];
+        int peerChromosome = selectChromosome(r, peer, homologic, chromosome);
         chromosomes[ownChromosome] = peer.getChromosomes()[peerChromosome];
         peer.getChromosomes()[peerChromosome] = chromosome;
         peer.fitness = -1f;
@@ -144,23 +144,7 @@ public class Microbe {
     public void pairing(Random r, Microbe peer, boolean homologic) {
         int ownChromosomeNo = r.nextInt(chromosomes.length);
         float[] chromosome = chromosomes[ownChromosomeNo];
-        int peerChromosomeNo = r.nextInt(peer.getChromosomes().length);
-        if (homologic) {
-            int bestMatches = 0;
-            for (int c = 0; c < peer.getChromosomes().length; c++) {
-                float[] peerChromosome = peer.getChromosomes()[c];
-                int matches = 0;
-                for (int i = 1; i < peerChromosome.length; i++) {
-                    if (chromosome[i] == peerChromosome[i]) {
-                        matches++;
-                    }
-                }
-                if (matches > bestMatches) {
-                    bestMatches = matches;
-                    peerChromosomeNo = c;
-                }
-            }
-        }
+        int peerChromosomeNo = selectChromosome(r, peer, homologic, chromosome);
         chromosomes[ownChromosomeNo] = peer.getChromosomes()[peerChromosomeNo];
         peer.getChromosomes()[peerChromosomeNo] = chromosome;
 
@@ -174,6 +158,30 @@ public class Microbe {
         }
         this.fitness = -1f;
         peer.fitness = -1f;
+    }
+
+    private static int selectChromosome(Random r, Microbe peer, boolean homologic, float[] ownChromosome) {
+        int peerChromosomeNo = r.nextInt(peer.getChromosomes().length);
+        if (homologic) {
+            int bestMatches = 0;
+            for (int c = 0; c < peer.getChromosomes().length; c++) {
+                float[] peerChromosome = peer.getChromosomes()[c];
+                if (peerChromosome == ownChromosome) {
+                    continue;
+                }
+                int matches = 0;
+                for (int i = 1; i < peerChromosome.length; i++) {
+                    if (ownChromosome[i] == peerChromosome[i]) {
+                        matches++;
+                    }
+                }
+                if (matches > bestMatches) {
+                    bestMatches = matches;
+                    peerChromosomeNo = c;
+                }
+            }
+        }
+        return peerChromosomeNo;
     }
 
     private static float[][] OF_CHROMOSOMES = new float[0][0];

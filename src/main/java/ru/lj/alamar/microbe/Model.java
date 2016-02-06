@@ -110,7 +110,7 @@ public class Model {
         float chromosomeSubstitutionRatio = Float.parseFloat(model.getProperty("chromosome.substitution.ratio"));
         float chromosomeExchangeRatio = Float.parseFloat(model.getProperty("chromosome.exchange.ratio"));
         float pairingRatio = Float.parseFloat(model.getProperty("pairing.ratio"));
-        float homologicPairingRatio = Float.parseFloat(model.getProperty("homologic.pairing.ratio"));
+        boolean homology = "true".equalsIgnoreCase(model.getProperty("homology"));
 
         boolean inexactDuplication = "true".equalsIgnoreCase(model.getProperty("inexact.chromosome.duplication"));
         boolean mitosis = "true".equalsIgnoreCase(model.getProperty("mitosis"));
@@ -149,27 +149,22 @@ public class Model {
             for (int t = 0; t < horizontalTransferRatio * totalChromosomes; t++) {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
-                recipient.horizontalTransfer(r, donor);
+                recipient.horizontalTransfer(r, donor, homology);
             }
             for (int t = 0; t < chromosomeSubstitutionRatio * totalChromosomes; t++) {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
-                recipient.chromosomeSubstitution(r, donor);
+                recipient.chromosomeSubstitution(r, donor, homology);
             }
             for (int t = 0; t < chromosomeExchangeRatio * totalChromosomes; t++) {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
-                recipient.chromosomeExchange(r, donor);
+                recipient.chromosomeExchange(r, donor, homology);
             }
             for (int t = 0; t < pairingRatio * totalChromosomes; t++) {
                 Microbe donor = microbes.get(r.nextInt(microbes.size()));
                 Microbe recipient = microbes.get(r.nextInt(microbes.size()));
-                recipient.pairing(r, donor, false);
-            }
-            for (int t = 0; t < homologicPairingRatio * totalChromosomes; t++) {
-                Microbe donor = microbes.get(r.nextInt(microbes.size()));
-                Microbe recipient = microbes.get(r.nextInt(microbes.size()));
-                recipient.pairing(r, donor, true);
+                recipient.pairing(r, donor, homology);
             }
             int[] ploidy = new int[10];
             for (Microbe microbe : microbes) {
