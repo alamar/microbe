@@ -31,4 +31,5 @@ echo fig01 fig03 fig04 fig05 fig06 fig07 fig08 fig09 fig10 | xargs -d ' ' -P 3 -
 ./merge.sh 2000 fig10/monoploid fig10/2-ploid,fig10/2-ploid_mitosis fig10/6-ploid,fig10/6-ploid_mitosis fig10/18-ploid,fig10/18-ploid_mitosis fig10a
 ./merge.sh 2000 fig10/monoploid_LGT1 fig10/2-ploid_mitosis_LGT1 fig10/6-ploid_mitosis_LGT1 fig10/18-ploid_mitosis_LGT1 fig10b
 ./merge.sh 2000 fig10/18-ploid_mitosis fig10/18-ploid_mitosis_chr-exchange05 fig10/18-ploid_mitosis_crossing1 fig10/18-ploid_mitosis_chr-exchange05_crossing1 fig10c
+./merge.sh 2000 fig10/6-ploid_mitosis fig10/6-ploid_mitosis_pairing004 fig10/6-ploid_mitosis_homologic-pairing004 fig10/6-ploid_mitosis_homologic-chr-exchange004 fig10/6-ploid_mitosis_crossing04 fig10d
 
