@@ -1,3 +1,5 @@
+This is branch intended for distribution with our article. To rebuild figures from the article, use `./make-article.sh`
+
 microbe
 ==
 
