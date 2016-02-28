@@ -2,9 +2,16 @@ package ru.lj.alamar.microbe;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
+import org.apache.batik.dom.GenericDOMImplementation;
+import org.apache.batik.svggen.SVGGraphics2D;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
@@ -15,6 +22,8 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.RectangleInsets;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
 
 import ru.yandex.bolts.collection.Cf;
 import ru.yandex.bolts.collection.ListF;
@@ -116,12 +125,42 @@ public class Chart {
         legend.setMaxWidth(0.98f);
         plot.addAnnotation(legend);
         chart.removeLegend();
-        File output = new File("models/" + model + ".png");
+        File output = new File("models/" + model + ".svg");
         if (output.exists()) {
             System.err.println("Creating back-up copy of simulation chart");
             output.renameTo(new File(output.getPath() + ".bak"));
         }
-        ChartUtilities.saveChartAsPNG(output, chart, 1200, 900);
+        exportChartAsSVG(chart, new Rectangle(1200, 900), output);
         System.err.println("Wrote chart: " + output.getPath());
+    }
+
+    /**
+     * http://dolf.trieschnigg.nl/jfreechart/
+     *
+     * Exports a JFreeChart to a SVG file.
+     *
+     * @param chart JFreeChart to export
+     * @param bounds the dimensions of the viewport
+     * @param svgFile the output file.
+     * @throws IOException if writing the svgFile fails.
+     */
+    private static void exportChartAsSVG(JFreeChart chart, Rectangle bounds, File svgFile) throws IOException {
+        // Get a DOMImplementation and create an XML document
+        DOMImplementation domImpl =
+            GenericDOMImplementation.getDOMImplementation();
+        Document document = domImpl.createDocument(null, "svg", null);
+
+        // Create an instance of the SVG Generator
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+
+        // draw the chart in the SVG generator
+        chart.draw(svgGenerator, bounds);
+
+        // Write svg file
+        OutputStream outputStream = new FileOutputStream(svgFile);
+        Writer out = new OutputStreamWriter(outputStream, "UTF-8");
+        svgGenerator.stream(out, true /* use css */);
+        outputStream.flush();
+        outputStream.close();
     }
 }
