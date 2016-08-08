@@ -3,7 +3,7 @@ microbe
 
 This program is a computer model that simulates evolution of a finite population of unicellular organisms.
 
-You need Java Runtime Environment >= 7.
+To run it, you need Java Runtime Environment >= 7.
 
 Models, simulation results, charts and backups reside in `MODELS` directory
 
@@ -38,8 +38,24 @@ for example:
 
 Will produce a chart with 650 steps of average monoploid, two diploids in similar colors (red), two triploid in similar colors (green).
 
+![Ploidy chart](https://raw.github.com/alamar/microbe/master/models/ploidy.png)
+
+
+paper
+==
+
+If you are using derivatives of this program, please don't hesitate to cite our paper:
+
+*Markov A, Kaznacheev IS. Evolutionary consequences of polyploidy in prokaryotes and the origin of mitosis and meiosis. Biology Direct. 2016*
+
+http://biologydirect.biomedcentral.com/articles/10.1186/s13062-016-0131-8
+
+
+development
+==
+
 For development, you need Maven. `mvn package` will compile source, run some tests, download dependencies and package compiled files.
 
 Use `mvn dependency:copy-dependencies` and `mvn license:update-project-license` for maintenance.
 
-![Ploidy chart](https://raw.github.com/alamar/microbe/master/models/ploidy.png)
+There's also a branch named `svg-charts` that can produce vector SVG charts instead of PNG.
